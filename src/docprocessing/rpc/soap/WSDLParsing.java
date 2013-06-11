@@ -25,7 +25,7 @@ import org.ow2.easywsdl.wsdl.api.*;
 
 /**
  *
- * @author Leandro Ordonez
+ * @author leandro
  */
 public class WSDLParsing {
 
