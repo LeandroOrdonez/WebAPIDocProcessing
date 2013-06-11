@@ -9,3 +9,5 @@ dis/
 nbproject/
 build.xml
 manifest.xml
+*.txt
+*.txt~
