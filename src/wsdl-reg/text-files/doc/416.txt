@@ -1,0 +1,1 @@
+Adds one or many fixed message 

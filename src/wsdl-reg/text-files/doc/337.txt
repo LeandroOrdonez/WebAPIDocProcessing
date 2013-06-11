@@ -1,0 +1,1 @@
+Gets the succession court associated with the municipality code  The opening hours of the succession court are included in the result 

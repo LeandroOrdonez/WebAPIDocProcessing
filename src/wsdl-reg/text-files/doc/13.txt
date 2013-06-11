@@ -1,0 +1,1 @@
+This method checks an address with  lines and returns all possible matches 

@@ -1,0 +1,1 @@
+Gets the tax center associated with the municipality code  If exists the opening hours of the tax center are included in the result 

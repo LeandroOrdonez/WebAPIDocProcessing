@@ -1,0 +1,1 @@
+Sends an  SMS message containing a  WAP  Push instruction to the recipient handset  Parameters href  A  URL accessible to the recipient device text  Text used to describe the content to the user  Returns the  ID of the message assigned by the  Esendex message  Server 

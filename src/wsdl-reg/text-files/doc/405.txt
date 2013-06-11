@@ -1,0 +1,1 @@
+Reports messages send between specified dates 

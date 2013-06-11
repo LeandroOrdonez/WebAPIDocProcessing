@@ -1,0 +1,1 @@
+Built in diagnostics   This method runs a the quick tests suite to determine if the module is up and running properly  This method is normally used by automatic tools  like  Open View or  Whats Up  to monitor the services  The service returns true if everything works fine 

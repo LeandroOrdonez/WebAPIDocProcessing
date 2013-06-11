@@ -1,0 +1,1 @@
+A  Kitchen And Housewares Box requires a kitchen and housewares search string as input  An example is  cookware 

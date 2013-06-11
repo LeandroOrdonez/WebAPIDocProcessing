@@ -1,0 +1,1 @@
+List  Management   Obtains all the list  I Ds from a specific  License key 

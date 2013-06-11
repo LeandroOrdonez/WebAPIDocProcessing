@@ -1,0 +1,1 @@
+A  Camera And Photo Box requires a camera and photo search string as input  An example is  digital camera 

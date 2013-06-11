@@ -1,0 +1,1 @@
+This  Method returns information about the status of multiple notifies via queueid  delimited by a semicolon   This transaction is free  but does require a valid License Key 

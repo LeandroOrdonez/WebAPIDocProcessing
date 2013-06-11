@@ -1,0 +1,1 @@
+Script  Management   Delete a script 

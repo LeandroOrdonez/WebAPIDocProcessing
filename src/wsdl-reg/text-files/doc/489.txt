@@ -1,0 +1,1 @@
+This method will retrieve a list of all theaters and the movies playing today 

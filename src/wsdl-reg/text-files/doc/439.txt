@@ -1,0 +1,1 @@
+Posts an alert to be delivered to a customer via  Messenger or  SMS  see  Software Development Kit for documentation   Restricted access 

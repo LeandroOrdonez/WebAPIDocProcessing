@@ -1,0 +1,1 @@
+Returns the email address  and instrument name s  held by the  ID for the specified user 

@@ -1,0 +1,1 @@
+A  Manufacturer Camera And Photo Box requires a camera and photo manufacturer name as input  An example is  Canon 

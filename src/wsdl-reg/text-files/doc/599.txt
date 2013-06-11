@@ -1,0 +1,1 @@
+This method will list all the voices available for your notification  Use the  Voice ID for the  Notification  Methods 

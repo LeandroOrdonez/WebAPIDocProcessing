@@ -1,0 +1,1 @@
+Script  Management   Lists the scripts belonging to a license key  Set  Include Global Scripts to true if you would like  CDYNE global scripts to be included 

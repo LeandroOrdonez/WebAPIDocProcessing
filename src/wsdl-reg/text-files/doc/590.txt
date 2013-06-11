@@ -1,0 +1,1 @@
+Cancels a single notify  This will not cancel completed calls or calls in progress  You will credited for any successfully cancelled notify that returns a true 

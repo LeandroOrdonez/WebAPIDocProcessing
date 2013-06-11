@@ -1,0 +1,1 @@
+Gets the companytype by the kraknumber   Kraknumber is  Krak s own internal key for a company 

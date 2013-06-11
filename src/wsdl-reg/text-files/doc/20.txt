@@ -1,0 +1,1 @@
+Queries the  Ordnance  Survey  OS  geocode database  returning the  Easting   Northings   Longitude   Latitude of the postcode  This service provides a precise geographical location for each postcode  This service covers  England  Scotland and  Wales 

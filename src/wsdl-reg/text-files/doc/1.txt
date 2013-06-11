@@ -1,0 +1,1 @@
+Returns all possible city names for a zipcode as an array 

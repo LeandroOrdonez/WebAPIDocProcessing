@@ -1,0 +1,1 @@
+Obtains  MUSIC  data from an  MMID  via  MUSIC 

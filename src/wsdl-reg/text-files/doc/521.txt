@@ -1,0 +1,1 @@
+Checks the status of a user against the  ID for the specified society  Returns  NOT  MEMBER  SUC  EXEC  or  SUC  MEMBER depending on the result of the query 

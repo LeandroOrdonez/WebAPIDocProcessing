@@ -1,0 +1,1 @@
+Sound file upload  Our system accepts  WAV  PCM  U law  A law  MS  ADPCM  Files  We plan on adding more very soon  To use the sound file in the notify put  around it and start it with a   Example  Hello  Sound File  you are cool   This would text to speech  Hello and you are cool adding the sound file in the middle   free 

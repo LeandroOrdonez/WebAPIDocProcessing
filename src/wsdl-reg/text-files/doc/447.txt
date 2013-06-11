@@ -1,0 +1,1 @@
+Returns the personalized list of plugins  and panels  to be installed on a client s messenger  see  Software Development Kit for documentation   Restricted access 

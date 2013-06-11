@@ -1,0 +1,1 @@
+Search for companies by  Central Business Register number  Since the  Central Business Register number is uniqe  this method should only return  company 

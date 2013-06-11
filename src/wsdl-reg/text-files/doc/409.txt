@@ -1,0 +1,1 @@
+Reports messages sent using a predefined template 

@@ -1,0 +1,1 @@
+Gets municipality information  social center  tax center and succession court  by the municipality code  The opening hours of the entities are included in the result 

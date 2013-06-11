@@ -1,0 +1,1 @@
+Obtains  MUSIC  data from a barcode   via  MUSIC 

@@ -1,0 +1,1 @@
+Allows you to control the notifies with a class  This  Function allows  Multiple  Notifies to be sent in one send  This allows for the maximum combinations of using notify  We suggest using our list management features for  Notify batches over 

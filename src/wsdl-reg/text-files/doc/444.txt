@@ -1,0 +1,1 @@
+Returns  OK if the given customer is a current subscriber of  Tiscali  Mobile  Instant Messaging client  see  Software Development Kit for documentation   Restricted access 

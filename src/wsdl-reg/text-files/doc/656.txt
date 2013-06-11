@@ -1,0 +1,1 @@
+Returns  Year Element Name  Year Sign Name  From  Birthday and culture ID 

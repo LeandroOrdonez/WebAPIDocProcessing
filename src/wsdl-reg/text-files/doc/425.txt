@@ -1,0 +1,1 @@
+Validates account using code sent after registering 

@@ -1,0 +1,1 @@
+Checks if a customer is subscribed to a certain alerts site  see  Software Development Kit for documentation   Restricted access 

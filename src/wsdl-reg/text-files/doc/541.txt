@@ -1,0 +1,1 @@
+A  Similarities Box requires an  Amazon  Standard  Item  Number  ASIN  or  International  Standard  Book  Number  ISBN  in string format as input  An example is  B    ADT 

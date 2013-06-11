@@ -1,0 +1,1 @@
+Returns a data set containing the subscribers for the given service  see  Software Development Kit for documentation   Restricted access 

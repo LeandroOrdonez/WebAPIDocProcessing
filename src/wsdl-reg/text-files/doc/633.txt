@@ -1,0 +1,1 @@
+This  Method will call phone numbers with a way to set calls per minute  delimited by a semicolon  in the  US  Canada and read the  Text To Say to that phone number  You must use a license key for this function  Your billing will be charged per phone number 

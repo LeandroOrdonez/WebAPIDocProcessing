@@ -1,0 +1,1 @@
+A  Baby Box requires a baby related search string as input  An example is  car seat 

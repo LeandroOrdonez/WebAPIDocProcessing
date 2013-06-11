@@ -1,0 +1,1 @@
+Queries the  PAF  database  returning the address and premise information matching the postcode  This service covers  England  Northern  Ireland  Scotland and  Wales 

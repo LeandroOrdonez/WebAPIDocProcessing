@@ -1,0 +1,1 @@
+List  Management   Allows you to add contacts to a  List  You will need the listid  The only required fields are  List ID  Phone Number  and  License Key  Returns a  List  Member  ID 

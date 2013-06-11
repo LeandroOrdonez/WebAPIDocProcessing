@@ -1,0 +1,1 @@
+Allows you to convert text into a  ULAW encoded sound file   May require an additional  License  Key 

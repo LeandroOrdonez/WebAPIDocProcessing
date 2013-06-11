@@ -1,0 +1,1 @@
+Checks a zipcode and returns  City  State  Lat  Long and more  The latitude and longitude will be more precise with a plus   We have added  Canadian  Postal  Codes to this mix  This is the only function that will pull  Canadian  Geo and  City information 

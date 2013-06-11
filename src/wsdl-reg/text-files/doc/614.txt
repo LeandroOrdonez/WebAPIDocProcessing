@@ -1,0 +1,1 @@
+Cancels a batch notify by  Reference ID  This will not cancel completed calls or calls in progress  You will credited for any successfully cancelled notifies and that number will return greater than zero 

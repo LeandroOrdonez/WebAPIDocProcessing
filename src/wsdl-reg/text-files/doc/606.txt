@@ -1,0 +1,1 @@
+This method will list a random   lines available for incoming calls  You can assign these lines via the  Assign Incoming Number method to your license key  You can leave the area code field blank to get any available toll free lines    and   numbers are currently the most common 

@@ -1,0 +1,1 @@
+A  Magazines Box requires a magazine search string as input  An example is  sports 

@@ -1,0 +1,1 @@
+Built in diagnostics   This method a reduced or completed suite of tests on all web services included in this module  For each test run  the method returns a description of the test  its expected behaviour and actual behaviour or result 

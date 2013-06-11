@@ -1,0 +1,1 @@
+A  Manufacturer Electronics Box requires an electronics manufacturer name as input  An example is  Sony 

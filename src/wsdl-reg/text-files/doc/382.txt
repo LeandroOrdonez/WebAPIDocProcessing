@@ -1,0 +1,1 @@
+Returns an array of  Magazines for a  Service Register used by an  Account 

@@ -1,0 +1,1 @@
+This method will retrieve a list of all movies that are scheduled to be released in the future and their anticipated release dates 

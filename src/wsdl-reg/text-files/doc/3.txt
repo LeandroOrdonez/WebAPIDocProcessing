@@ -1,0 +1,1 @@
+Returns all possible Zip Codes for a city state combination  For this function to work you must put true or false in  Ignore Bad City Spelling  That flag will allow you to have cities Zip Codes that have the city name spelled incorrectly  This function is far more accurate with that flag set to false  Use a License Key of  for testing 

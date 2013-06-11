@@ -1,0 +1,1 @@
+An  Asin Box requires an  Amazon  Standard  Item  Number  ASIN  or  International  Standard  Book  Number  ISBN  in string format as input  Up to  comma separated  ASI Ns without embedded spaces can be sent with each  Asin Box request string  An example is 

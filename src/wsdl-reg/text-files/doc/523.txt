@@ -1,0 +1,1 @@
+Checks login details against the  ID for the specified society  username should be an  ID  ID or email address  password should be md  encoded before passing  society should be the name of the society  e g   Symphony  Orchestra   Wind  Orchestra   Music  Theatre  Warwick   Brass  Society 

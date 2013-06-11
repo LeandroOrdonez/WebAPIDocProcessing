@@ -1,0 +1,1 @@
+A  Manufacturer Computer Hardware Box requires a computer hardware manufacturer name as input  An example is  Apple 

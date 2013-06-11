@@ -1,0 +1,1 @@
+Variable  Management   Save a variable  Variable Name can only be   characters or less   Saving a  Variable with an existing name will overwrite the old  Variable  Saving a blank value will delete the variable 

@@ -1,0 +1,1 @@
+Retrieves the timestamp of the specified provider 

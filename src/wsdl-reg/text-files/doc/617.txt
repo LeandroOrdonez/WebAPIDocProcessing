@@ -1,0 +1,1 @@
+This method will assign a  Incoming  Number to a  License  Key  Returns true if assignment is successful  Returns false if the number is claimed or not available  Numbers are billed at   month per number  Normal fees for transactions apply 

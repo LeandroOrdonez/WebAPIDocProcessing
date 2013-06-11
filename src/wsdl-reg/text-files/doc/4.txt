@@ -1,0 +1,1 @@
+Calculates the distance between two areas using longitude and latitude  This is calculated using spherical geometry  This is a free function  You can get the calculations behind this function via support cdyne com 

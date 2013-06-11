@@ -1,0 +1,1 @@
+Returns an array of  Fees for a  Service Register used by an  Account 

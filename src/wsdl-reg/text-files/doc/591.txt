@@ -1,0 +1,1 @@
+Allows you to get the  Call  Script for incoming calls for a particular number  You must have incoming phone numbers set by  CDYNE  Staff 

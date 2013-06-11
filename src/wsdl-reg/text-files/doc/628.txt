@@ -1,0 +1,1 @@
+Allows you to control the notifies with a class  This allows for the maximum combinations of using notify 
