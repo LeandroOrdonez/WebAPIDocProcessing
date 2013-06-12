@@ -30,9 +30,11 @@ public class DictGenerator {
     public static void generateDocDictionary(String path) {
         Properties currencyCodes = new Properties();
         Properties acronyms = new Properties();
+        Properties dictPath = new Properties();
         try {
             currencyCodes.load(DictGenerator.class.getResourceAsStream("/docprocessing/util/currencycodes.properties"));
             acronyms.load(DictGenerator.class.getResourceAsStream("/docprocessing/util/acronyms.properties"));
+            dictPath.load(DictGenerator.class.getResourceAsStream("/config/config.properties"));
             STOPWORDS.load(DictGenerator.class.getResourceAsStream("/docprocessing/util/stopwords.properties"));
         } catch (IOException ex) {
             Logger.getLogger(DictGenerator.class.getName()).log(Level.SEVERE, null, ex);
@@ -83,7 +85,7 @@ public class DictGenerator {
         System.out.println("Words: " + words + "\n Dict. size: " + words.size());
         FileOutputStream out = null;
         try {
-            File f = new File("/home/leandro/development/python/onlineldavb/dictnostops.txt");
+            File f = new File(dictPath.getProperty("dict_path"));
             f.createNewFile();
             out = new FileOutputStream(f);
             for (String word : words.keySet()) {
