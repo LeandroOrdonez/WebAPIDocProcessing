@@ -45,20 +45,27 @@ public class TextFilesGenerator {
             String fileName = DOC_PATH + operation.getId() + ".txt";
             File f = new File(fileName);
             f.createNewFile();
-            String content = (operation.getOperationDocumentation().isEmpty() || operation.getOperationDocumentation().equalsIgnoreCase("This method requires a custom soap header set by the caller")) ? acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName())) + "\n"
-                    : acronymResolver(DocCleaning.clean(operation.getOperationDocumentation()));
+            // Text file structure 1: 1-line: Operation Name OR Operation Documentation
+//            String content = (operation.getOperationDocumentation().isEmpty() || operation.getOperationDocumentation().equalsIgnoreCase("This method requires a custom soap header set by the caller")) ? acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName())) + "\n"
+//                    : acronymResolver(DocCleaning.clean(operation.getOperationDocumentation()));
 
-//            String content = acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName()))+ "\n";
-//            content =  !operation.getOperationDocumentation().equalsIgnoreCase("This method requires a custom soap header set by the caller") ? content + acronymResolver(DocCleaning.clean(operation.getOperationDocumentation())) + "\n" : content;
-//            content = operation.getSoapService().getServiceDocumentation().isEmpty() ? content + acronymResolver(CamelCaseFilter.splitCamelCase(operation.getSoapService().getServiceName())) : content + acronymResolver(DocCleaning.clean(operation.getSoapService().getServiceDocumentation()));
+            // Text file structure 2: 1-line: Operation Name
+            //                        2-line: Operation Documentation (when available) 
+            //                        3-line: Service Documentation (when available) OR Service Name
+            String content = acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName())) + "\n";
+            content = !operation.getOperationDocumentation().equalsIgnoreCase("This method requires a custom soap header set by the caller") ? content + acronymResolver(DocCleaning.clean(operation.getOperationDocumentation())) + "\n" : content;
+            content = operation.getSoapService().getServiceDocumentation().isEmpty() ? content + acronymResolver(CamelCaseFilter.splitCamelCase(operation.getSoapService().getServiceName())) : content + acronymResolver(DocCleaning.clean(operation.getSoapService().getServiceDocumentation()));
+//            content = DocCleaning.spellCorrection(content);
 
-            /* Added for testing purposes */
+            //** Added just for testing purposes */
+            // Text file structure 3: 1-line: Operation Name OR Operation Documentation               
+            //                        n-line: Name of the n-data element of the operation
+//            String content = (operation.getOperationDocumentation().isEmpty() || operation.getOperationDocumentation().equalsIgnoreCase("This method requires a custom soap header set by the caller")) ? acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName())) + "\n"
+//                    : acronymResolver(DocCleaning.clean(operation.getOperationDocumentation())); 
 //            for (SoapDataElement data : operation.getDataElements()) {
 //                content += DocCleaning.spellCorrection(acronymResolver(CamelCaseFilter.splitCamelCase(data.getDataElementName()))) + "\n";
 //            }
-            /**
-             * ***************************
-             */
+            //***********************************/
             out = new FileOutputStream(fileName);
             out.write(content.getBytes());
 //            System.out.println(operation.getId() + ": " + content);
