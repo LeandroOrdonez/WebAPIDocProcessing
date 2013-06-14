@@ -33,13 +33,6 @@ public class DocCleaning {
         String correctedSentence = "";
         for (String word : words) {
             if (word.length() > 6) {
-//                long delay = Math.round(10000 * Math.random());
-//                try {
-////                https://www.google.com/tbproxy/spell?lang=en&hl=en
-//                    Thread.sleep(delay);
-//                } catch (InterruptedException ex) {
-//                    Thread.currentThread().interrupt();
-//                }
                 request.setText(word);
                 request.setIgnoreDuplicates(true); // Ignore duplicates
                 SpellResponse spellResponse = checker.check(request);
@@ -60,21 +53,6 @@ public class DocCleaning {
 
     public static void main(String[] args) {
 
-//        all = re.search(r'<text.*?>(.*)</text', all, flags=re.DOTALL).group(1)
-//            all = re.sub(r'\n', ' ', all)
-//            all = re.sub(r'\{\{.*?\}\}', r'', all)
-//            all = re.sub(r'\[\[Category:.*', '', all)
-//            all = re.sub(r'==\s*[Ss]ource\s*==.*', '', all)
-//            all = re.sub(r'==\s*[Rr]eferences\s*==.*', '', all)
-//            all = re.sub(r'==\s*[Ee]xternal [Ll]inks\s*==.*', '', all)
-//            all = re.sub(r'==\s*[Ee]xternal [Ll]inks and [Rr]eferences==\s*', '', all)
-//            all = re.sub(r'==\s*[Ss]ee [Aa]lso\s*==.*', '', all)
-//            all = re.sub(r'http://[^\s]*', '', all)
-//            all = re.sub(r'\[\[Image:.*?\]\]', '', all)
-//            all = re.sub(r'Image:.*?\|', '', all)
-//            all = re.sub(r'\[\[.*?\|*([^\|]*?)\]\]', r'\1', all)
-//            all = re.sub(r'\&lt;.*?&gt;', '', all)
-
 //        System.out.println("Before cleaning: \n\n");
 //        String doc = "611223";
 //        System.out.println(doc);
@@ -85,13 +63,13 @@ public class DocCleaning {
 //        System.out.println(doc.matches("[0-9]*"));
 //        System.out.println(doc.replaceAll("[0-9]*", " "));
         
-        String splitCamelCase = CamelCaseFilter.splitCamelCase("Service definition of function mms  getMapAroundtopassword");
+        String splitCamelCase = CamelCaseFilter.splitCamelCase("Service definition of function mms  getMapAround");
         String[] split = "disablepasswordchange".split(" ");
         for (String string : split) {
             System.out.println(string);
         }
         
-        String words = "zip code	yjkhg";
+        String words = "zip code	anything";
         
         words = (words.indexOf("	")!=-1) ? words.substring(0, words.indexOf("	")) : words;
         System.out.println(words);
