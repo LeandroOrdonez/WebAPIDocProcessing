@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 /**
  *
- * @author root
+ * @author Leandro Ordonez
  */
 public class DirectoryExplorer {
 
