@@ -83,7 +83,7 @@ public class CrudManager {
         return serviceJpaController.getSoapServiceCount();
     }
     
-    public int getSoapOperationCount() {
+    public long getSoapOperationCount() {
         return operationJpaController.getSoapOperationCount();
     }
     
