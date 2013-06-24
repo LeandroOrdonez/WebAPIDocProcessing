@@ -46,26 +46,26 @@ public class SoapOperationJpaController implements Serializable {
                 soapService = em.getReference(soapService.getClass(), soapService.getServiceURI());
                 soapOperation.setSoapService(soapService);
             }
-            List<SoapDataElement> attachedDataElements = new ArrayList<SoapDataElement>();
-            for (SoapDataElement dataElementsSoapDataElementToAttach : soapOperation.getDataElements()) {
-                dataElementsSoapDataElementToAttach = em.getReference(dataElementsSoapDataElementToAttach.getClass(), dataElementsSoapDataElementToAttach.getId());
-                attachedDataElements.add(dataElementsSoapDataElementToAttach);
-            }
-            soapOperation.setDataElements(attachedDataElements);
+//            List<SoapDataElement> attachedDataElements = new ArrayList<SoapDataElement>();
+//            for (SoapDataElement dataElementsSoapDataElementToAttach : soapOperation.getDataElements()) {
+//                dataElementsSoapDataElementToAttach = em.getReference(dataElementsSoapDataElementToAttach.getClass(), dataElementsSoapDataElementToAttach.getId());
+//                attachedDataElements.add(dataElementsSoapDataElementToAttach);
+//            }
+//            soapOperation.setDataElements(attachedDataElements);
             em.persist(soapOperation);
-            if (soapService != null) {
-                soapService.getOperations().add(soapOperation);
-                soapService = em.merge(soapService);
-            }
-            for (SoapDataElement dataElementsSoapDataElement : soapOperation.getDataElements()) {
-                SoapOperation oldSoapOperationOfDataElementsSoapDataElement = dataElementsSoapDataElement.getSoapOperation();
-                dataElementsSoapDataElement.setSoapOperation(soapOperation);
-                dataElementsSoapDataElement = em.merge(dataElementsSoapDataElement);
-                if (oldSoapOperationOfDataElementsSoapDataElement != null) {
-                    oldSoapOperationOfDataElementsSoapDataElement.getDataElements().remove(dataElementsSoapDataElement);
-                    oldSoapOperationOfDataElementsSoapDataElement = em.merge(oldSoapOperationOfDataElementsSoapDataElement);
-                }
-            }
+//            if (soapService != null) {
+//                soapService.getOperations().add(soapOperation);
+//                soapService = em.merge(soapService);
+//            }
+//            for (SoapDataElement dataElementsSoapDataElement : soapOperation.getDataElements()) {
+//                SoapOperation oldSoapOperationOfDataElementsSoapDataElement = dataElementsSoapDataElement.getSoapOperation();
+//                dataElementsSoapDataElement.setSoapOperation(soapOperation);
+//                dataElementsSoapDataElement = em.merge(dataElementsSoapDataElement);
+//                if (oldSoapOperationOfDataElementsSoapDataElement != null) {
+//                    oldSoapOperationOfDataElementsSoapDataElement.getDataElements().remove(dataElementsSoapDataElement);
+//                    oldSoapOperationOfDataElementsSoapDataElement = em.merge(oldSoapOperationOfDataElementsSoapDataElement);
+//                }
+//            }
             em.getTransaction().commit();
         } finally {
             if (em != null) {
