@@ -8,6 +8,7 @@ import docprocessing.rpc.soap.model.SoapComplexDataElement;
 import docprocessing.rpc.soap.model.SoapDataElement;
 import docprocessing.rpc.soap.model.SoapOperation;
 import docprocessing.rpc.soap.model.SoapService;
+import docprocessing.rpc.soap.persistence.CrudManager;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -205,6 +206,148 @@ public class WSDLParsing {
             return null;
         }
 
+    }
+    
+    public static SoapService parseAndStoreService(URL serviceURI, CrudManager manager) {
+        try {
+            TextFilesGenerator.init(); //initialize the text file generator.
+            WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
+            Description desc = reader.read(serviceURI);
+            Service service = desc.getServices().get(0);
+            System.out.println("Parsing Service: " + service.getEndpoints().get(0).getAddress() + "?wsdl");
+            SoapService soapService = new SoapService();
+            soapService.setServiceURI(service.getEndpoints().get(0).getAddress() + "?wsdl");
+            soapService.setServiceName(service.getQName().getLocalPart());
+            Documentation serviceDoc = service.getDocumentation();
+            soapService.setServiceDocumentation(serviceDoc != null ? serviceDoc.getContent() : "");
+            manager.createSoapService(soapService);
+            List<Endpoint> endpoints = service.getEndpoints();
+            List<SoapOperation> soapOperations = new ArrayList<>();
+            for (Endpoint endpoint : endpoints) {
+                if (!(endpoint.getName().contains("Http") || endpoint.getName().contains("Soap12"))) {
+                    Binding binding = endpoint.getBinding();
+                    InterfaceType aInterface = binding.getInterface();
+                    List<Operation> operations = aInterface.getOperations();
+                    int progress = 0;
+                    for (Operation operation : operations) {
+                        progress++;
+                        System.out.println("\tParsing " + progress + "/" + operations.size() + " operations...");
+                        SoapOperation soapOperation = new SoapOperation();
+                        soapOperation.setOperationName(operation.getQName().getLocalPart());
+                        soapOperation.setPattern(operation.getPattern().name());
+                        Documentation operationDoc = operation.getDocumentation();
+                        soapOperation.setOperationDocumentation(operationDoc != null ? operationDoc.getContent() : "");
+                        soapOperation.setSoapService(soapService);
+                        Input input = operation.getInput();
+                        List<Part> inputParts = input.getParts();
+                        List<SoapDataElement> operationData = new ArrayList<>();
+                        for (Part part : inputParts) {
+                            bucleControl = new ArrayList<>();
+                            Element inputElement = part.getElement();
+                            if(inputElement==null) {
+                                SoapDataElement dataElement = new SoapDataElement();
+                                dataElement.setDataElementName(part.getPartQName().getLocalPart());
+                                dataElement.setDirection(true);
+                                dataElement.setSoapComplexDataElement(null);
+                                dataElement.setDataType(part.getType().getQName() != null ? part.getType().getQName().getLocalPart() : "N/A");
+                                dataElement.setSoapOperation(soapOperation);
+                                operationData.add(dataElement);
+                                depthLevel++;
+//                                for (int indent = 0; indent < depthLevel; indent++) {
+//                                    System.out.print("  ");
+//                                }
+//                                System.out.println("Element: " + part.getPartQName().getLocalPart() + " (" + dataElement.getDataType() + ")");
+                                depthLevel--;
+                                continue;
+                            }
+                            if (inputElement.getType() instanceof ComplexTypeImpl) {
+                                SoapComplexDataElement dataElement = new SoapComplexDataElement();
+                                dataElement.setDataElementName(inputElement.getQName().getLocalPart());
+                                dataElement.setDirection(true);
+                                dataElement.setSoapComplexDataElement(null);
+                                dataElement.setSoapOperation(soapOperation);
+                                dataElement.setDataElements(elementProcessing(inputElement, dataElement));
+                                operationData.add(dataElement);
+                            } else {
+                                SoapDataElement dataElement = new SoapDataElement();
+                                dataElement.setDataElementName(inputElement.getQName().getLocalPart());
+                                dataElement.setDirection(true);
+                                dataElement.setSoapComplexDataElement(null);
+                                dataElement.setDataType(inputElement.getType().getQName() != null ? inputElement.getType().getQName().getLocalPart() : "N/A");
+                                dataElement.setSoapOperation(soapOperation);
+                                operationData.add(dataElement);
+                                depthLevel++;
+//                                for (int indent = 0; indent < depthLevel; indent++) {
+//                                    System.out.print("  ");
+//                                }
+//                                System.out.println("Element: " + inputElement.getQName().getLocalPart() + " (" + dataElement.getDataType() + ")");
+                                depthLevel--;
+                            }
+
+                        }
+                        Output output = operation.getOutput();
+                        List<Part> outputParts = output.getParts();
+                        for (Part part : outputParts) {
+                            bucleControl = new ArrayList<>();
+                            Element outputElement = part.getElement();
+                            if(outputElement==null) {
+                                SoapDataElement dataElement = new SoapDataElement();
+                                dataElement.setDataElementName(part.getPartQName().getLocalPart());
+                                dataElement.setDirection(false);
+                                dataElement.setSoapComplexDataElement(null);
+                                dataElement.setDataType(part.getType() != null ? part.getType().getQName().getLocalPart() : "N/A");
+                                dataElement.setSoapOperation(soapOperation);
+                                operationData.add(dataElement);
+                                depthLevel++;
+//                                for (int indent = 0; indent < depthLevel; indent++) {
+//                                    System.out.print("  ");
+//                                }
+//                                System.out.println("Element: " + part.getPartQName().getLocalPart() + " (" + dataElement.getDataType() + ")");
+                                depthLevel--;
+                                continue;
+                            }
+                            if (outputElement.getType() instanceof ComplexTypeImpl) {
+                                SoapComplexDataElement dataElement = new SoapComplexDataElement();
+                                dataElement.setDataElementName(outputElement.getQName().getLocalPart());
+                                dataElement.setDirection(false);
+                                dataElement.setSoapComplexDataElement(null);
+                                dataElement.setSoapOperation(soapOperation);
+                                dataElement.setDataElements(elementProcessing(outputElement, dataElement));
+                                operationData.add(dataElement);
+                            } else {
+                                SoapDataElement dataElement = new SoapDataElement();
+                                dataElement.setDataElementName(outputElement.getQName().getLocalPart());
+                                dataElement.setDirection(false);
+                                dataElement.setSoapComplexDataElement(null);
+                                dataElement.setDataType(outputElement.getType().getQName() != null ? outputElement.getType().getQName().getLocalPart() : "N/A");
+                                dataElement.setSoapOperation(soapOperation);
+                                operationData.add(dataElement);
+                                depthLevel++;
+//                                for (int indent = 0; indent < depthLevel; indent++) {
+//                                    System.out.print("  ");
+//                                }
+//                                System.out.println("Element: " + outputElement.getQName().getLocalPart() + " (" + dataElement.getDataType() + ")");
+                                depthLevel--;
+                            }
+                        }
+                        soapOperation.setDataElements(operationData);
+//                        long operationId = manager.getSoapOperationCount() + 1;
+//                        soapOperation.setId(operationId);
+                        manager.createSoapOperation(soapOperation);
+                        TextFilesGenerator.generateDocumentationFile(soapOperation);
+                        soapOperations.add(soapOperation);
+                    }
+                }
+            }
+            soapService.setOperations(soapOperations);
+            manager.editSoapService(soapService);
+////            System.out.println("\nSchema: " + schema);
+            return soapService;
+
+        } catch (XmlException | IOException | URISyntaxException ex) {
+            Logger.getLogger(WSDLParsing.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     public static List<SoapDataElement> elementProcessing(Element e, SoapComplexDataElement dataElement) throws XmlException {
