@@ -33,8 +33,8 @@ public class StorageTest {
 //            } 
 
             CrudManager manager = new CrudManager();
-            BufferedReader br = new BufferedReader(new FileReader("src/wsdl-reg/service-paths.txt"));
-            StringBuilder builder = new StringBuilder();
+            BufferedReader br = new BufferedReader(new FileReader("src/wsdl-reg/service-uris.txt"));
+//            StringBuilder builder = new StringBuilder();
             String wsdlUri;
             int i = 0;
             while ((wsdlUri = br.readLine()) != null) {
@@ -42,8 +42,9 @@ public class StorageTest {
                 i++;
                 System.out.print(i + ". ");
 //            builder.append(line);
-                SoapService parsedService = WSDLParsing.parseService(new URL(wsdlUri));
-                manager.createSoapService(parsedService);
+//                SoapService parsedService = WSDLParsing.parseService(new URL(wsdlUri));
+//                manager.createSoapService(parsedService);
+                WSDLParsing.parseAndStoreService(new URL(wsdlUri), manager);
                 System.out.println("\n----------------------------------------------------------------------------------------");
                 System.out.println("----------------------------------------------------------------------------------------\n");
             }
