@@ -138,5 +138,15 @@ public class CrudManager {
             Logger.getLogger(CrudManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    public void editSoapService(SoapService service) {
+        try {
+            serviceJpaController.edit(service);
+        } catch (NonexistentEntityException ex) {
+            Logger.getLogger(CrudManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(CrudManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
             
 }
