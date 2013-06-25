@@ -82,7 +82,7 @@ public class DictGenerator {
                 Logger.getLogger(DictGenerator.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        System.out.println("Words: " + words + "\n Dict. size: " + words.size());
+//        System.out.println("Words: " + words + "\n Dict. size: " + words.size());
         FileOutputStream out = null;
         try {
             File f = new File(dictPath.getProperty("dict_path"));
