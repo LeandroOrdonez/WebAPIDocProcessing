@@ -40,7 +40,8 @@ public class WSDLParsing {
      */
     public static void main(String[] args) {
         try {
-            URL serviceA = new URL("http://www.redtagmarket.com/notify/eBayNotification.asmx?wsdl");
+//            URL serviceA = new URL("http://www.redtagmarket.com/notify/eBayNotification.asmx?wsdl");
+            URL serviceA = new URL("http://s3.amazonaws.com/doc/2006-03-01/AmazonS3.wsdl");
             WSDLParsing processing = new WSDLParsing();
             processing.parseService(serviceA);
 
@@ -201,7 +202,7 @@ public class WSDLParsing {
                         soapOperation.setDataElements(operationData);
                         soapOperations.add(soapOperation);
                     }
-                    System.out.print("[" + mark + left + "] Done!\n");
+                    System.out.print("\t Processing: [" + mark + left + "] Done!\n");
                 }
             }
             soapService.setOperations(soapOperations);
@@ -221,7 +222,7 @@ public class WSDLParsing {
             WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
             Description desc = reader.read(serviceURI);
             Service service = desc.getServices().get(0);
-            System.out.println("Parsing Service: " + service.getEndpoints().get(0).getAddress() + "?wsdl\n");
+            System.out.println("Parsing Service: " + service.getEndpoints().get(0).getAddress() + "?wsdl                                  \n");
             SoapService soapService = new SoapService();
             soapService.setServiceURI(service.getEndpoints().get(0).getAddress() + "?wsdl");
             soapService.setServiceName(service.getQName().getLocalPart());
