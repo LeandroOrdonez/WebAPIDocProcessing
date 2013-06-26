@@ -33,7 +33,7 @@ public class ExecuteProcessing {
                 System.out.print(i + ". ");
                 TextFilesGenerator.DOC_PATH = args[1]!=null ? args[1] : TextFilesGenerator.DOC_PATH; //passing this path as argument to the .jar executable
                 WSDLParsing.parseAndStoreService(new URL(wsdlUri), manager);
-                System.out.println("\n----------------------------------------------------------------------------------------\n");
+                //System.out.println("\n----------------------------------------------------------------------------------------\n");
             }
 //            DictGenerator.generateDocDictionary(DictGenerator.DOC_PATH);
             DictGenerator.generateDocDictionary(TextFilesGenerator.DOC_PATH);
