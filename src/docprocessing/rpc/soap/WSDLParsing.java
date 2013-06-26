@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.namespace.QName;
+import org.apache.commons.lang.StringUtils;
 import org.ow2.easywsdl.schema.api.*;
 import org.ow2.easywsdl.schema.impl.ComplexTypeImpl;
 import org.ow2.easywsdl.wsdl.WSDLFactory;
@@ -81,11 +82,16 @@ public class WSDLParsing {
 ////                System.out.println("Loaded Interface: " + aInterface);
                     List<Operation> operations = aInterface.getOperations();
                     int progress = 0;
+                    int progressBarLength = 40;
+                    String mark = "";
+                    String left = StringUtils.repeat(" ", progressBarLength);
                     for (Operation operation : operations) {
-//                        System.out.println("\nLoaded Operation: " + operation.getQName().getLocalPart());
-//                        System.out.println("Operation Pattern: " + operation.getPattern().name());
+//                        System.out.println("\tParsing " + progress + "/" + operations.size() + " operations...");
                         progress++;
-                        System.out.println("\tParsing " + progress + "/" + operations.size() + " operations...");
+                        int current = (int) Math.round(((progress * 1.0) / operations.size()) * progressBarLength);
+                        mark = StringUtils.repeat("=", current);
+                        left = StringUtils.repeat(" ", progressBarLength - current);
+                        System.out.print("\t Processing: [" + mark + left + "] (" + progress + "/" + operations.size() + ") Operations\r");
                         SoapOperation soapOperation = new SoapOperation();
                         soapOperation.setOperationName(operation.getQName().getLocalPart());
                         soapOperation.setPattern(operation.getPattern().name());
@@ -102,7 +108,7 @@ public class WSDLParsing {
                         for (Part part : inputParts) {
                             bucleControl = new ArrayList<>();
                             Element inputElement = part.getElement();
-                            if(inputElement==null) {
+                            if (inputElement == null) {
                                 SoapDataElement dataElement = new SoapDataElement();
                                 dataElement.setDataElementName(part.getPartQName().getLocalPart());
                                 dataElement.setDirection(true);
@@ -152,7 +158,7 @@ public class WSDLParsing {
                         for (Part part : outputParts) {
                             bucleControl = new ArrayList<>();
                             Element outputElement = part.getElement();
-                            if(outputElement==null) {
+                            if (outputElement == null) {
                                 SoapDataElement dataElement = new SoapDataElement();
                                 dataElement.setDataElementName(part.getPartQName().getLocalPart());
                                 dataElement.setDirection(false);
@@ -195,6 +201,7 @@ public class WSDLParsing {
                         soapOperation.setDataElements(operationData);
                         soapOperations.add(soapOperation);
                     }
+                    System.out.print("[" + mark + left + "] Done!\n");
                 }
             }
             soapService.setOperations(soapOperations);
@@ -202,19 +209,19 @@ public class WSDLParsing {
             return soapService;
 
         } catch (XmlException | IOException | URISyntaxException ex) {
-            Logger.getLogger(WSDLParsing.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(WSDLParsing.class.getName()).log(Level.WARNING, null, ex);
             return null;
         }
 
     }
-    
+
     public static SoapService parseAndStoreService(URL serviceURI, CrudManager manager) {
         try {
             TextFilesGenerator.init(); //initialize the text file generator.
             WSDLReader reader = WSDLFactory.newInstance().newWSDLReader();
             Description desc = reader.read(serviceURI);
             Service service = desc.getServices().get(0);
-            System.out.println("Parsing Service: " + service.getEndpoints().get(0).getAddress() + "?wsdl");
+            System.out.println("Parsing Service: " + service.getEndpoints().get(0).getAddress() + "?wsdl\n");
             SoapService soapService = new SoapService();
             soapService.setServiceURI(service.getEndpoints().get(0).getAddress() + "?wsdl");
             soapService.setServiceName(service.getQName().getLocalPart());
@@ -229,9 +236,16 @@ public class WSDLParsing {
                     InterfaceType aInterface = binding.getInterface();
                     List<Operation> operations = aInterface.getOperations();
                     int progress = 0;
+                    int progressBarLength = 40;
+                    String mark = "";
+                    String left = StringUtils.repeat(" ", progressBarLength);
                     for (Operation operation : operations) {
+//                        System.out.println("\tParsing " + progress + "/" + operations.size() + " operations...");
                         progress++;
-                        System.out.println("\tParsing " + progress + "/" + operations.size() + " operations...");
+                        int current = (int) Math.round(((progress * 1.0) / operations.size()) * progressBarLength);
+                        mark = StringUtils.repeat("=", current);
+                        left = StringUtils.repeat(" ", progressBarLength - current);
+                        System.out.print("\t Processing: [" + mark + left + "] (" + progress + "/" + operations.size() + ") Operations\r");
                         SoapOperation soapOperation = new SoapOperation();
                         soapOperation.setOperationName(operation.getQName().getLocalPart());
                         soapOperation.setPattern(operation.getPattern().name());
@@ -244,7 +258,7 @@ public class WSDLParsing {
                         for (Part part : inputParts) {
                             bucleControl = new ArrayList<>();
                             Element inputElement = part.getElement();
-                            if(inputElement==null) {
+                            if (inputElement == null) {
                                 SoapDataElement dataElement = new SoapDataElement();
                                 dataElement.setDataElementName(part.getPartQName().getLocalPart());
                                 dataElement.setDirection(true);
@@ -290,7 +304,7 @@ public class WSDLParsing {
                         for (Part part : outputParts) {
                             bucleControl = new ArrayList<>();
                             Element outputElement = part.getElement();
-                            if(outputElement==null) {
+                            if (outputElement == null) {
                                 SoapDataElement dataElement = new SoapDataElement();
                                 dataElement.setDataElementName(part.getPartQName().getLocalPart());
                                 dataElement.setDirection(false);
@@ -345,7 +359,7 @@ public class WSDLParsing {
             return soapService;
 
         } catch (XmlException | IOException | URISyntaxException ex) {
-            Logger.getLogger(WSDLParsing.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(WSDLParsing.class.getName()).log(Level.WARNING, null, ex);
             return null;
         }
     }
@@ -366,8 +380,8 @@ public class WSDLParsing {
             if (!(bucleControl.contains(e.getQName()) || bucleControl.contains((type.getQName() != null) ? type.getQName() : e.getQName()))) {
                 bucleControl.add((type != null) ? type.getQName() : e.getQName());
 ////                System.out.println(schema);
-                List<Element> iterableElements = (type.getQName()!=null) ? schema.get(type.getQName()) : schema.get(e.getQName());
-                for (Element element : (iterableElements != null? iterableElements : schema.get(e.getQName()))) {
+                List<Element> iterableElements = (type.getQName() != null) ? schema.get(type.getQName()) : schema.get(e.getQName());
+                for (Element element : (iterableElements != null ? iterableElements : schema.get(e.getQName()))) {
                     SoapDataElement data;
                     if (element.getType() instanceof ComplexTypeImpl && (((ComplexTypeImpl) element.getType()).getSimpleContent() == null)) {
                         data = new SoapComplexDataElement();
