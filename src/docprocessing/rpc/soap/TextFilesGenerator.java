@@ -52,7 +52,9 @@ public class TextFilesGenerator {
             // Text file structure 2: 1-line: Operation Name
             //                        2-line: Operation Documentation (when available) 
             //                        3-line: Service Documentation (when available) OR Service Name
-            String content = acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName())) + "\n";
+            String content = operation.getOperationName() + "\n";
+            content = content + operation.getSoapService().getServiceURI() + "\n";
+            content = content + acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName())) + "\n";
             content = !operation.getOperationDocumentation().equalsIgnoreCase("This method requires a custom soap header set by the caller") ? content + acronymResolver(DocCleaning.clean(operation.getOperationDocumentation())) + "\n" : content;
             content = operation.getSoapService().getServiceDocumentation().isEmpty() ? content + acronymResolver(CamelCaseFilter.splitCamelCase(operation.getSoapService().getServiceName())) : content + acronymResolver(DocCleaning.clean(operation.getSoapService().getServiceDocumentation()));
 //            content = DocCleaning.spellCorrection(content);
