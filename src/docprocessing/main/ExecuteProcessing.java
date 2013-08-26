@@ -25,13 +25,13 @@ public class ExecuteProcessing {
         try {
             CrudManager manager = new CrudManager();
 //            BufferedReader br = new BufferedReader(new FileReader("src/wsdl-reg/service-uris.txt"));
-            BufferedReader br = new BufferedReader(args[0]!=null ? new FileReader(args[0]) : new FileReader("src/wsdl-reg/service-uris.txt"));
+            BufferedReader br = new BufferedReader((args.length != 0 && args[0] != null) ? new FileReader(args[0]) : new FileReader("src/wsdl-reg/service-uris.txt"));
             String wsdlUri;
             int i = 0;
             while ((wsdlUri = br.readLine()) != null) {
                 i++;
                 System.out.print(i + ". ");
-                TextFilesGenerator.DOC_PATH = args[1]!=null ? args[1] : TextFilesGenerator.DOC_PATH; //passing this path as argument to the .jar executable
+                TextFilesGenerator.DOC_PATH = (args.length > 1 && args[1] != null) ? args[1] : TextFilesGenerator.DOC_PATH; //passing this path as argument to the .jar executable
                 WSDLParsing.parseAndStoreService(new URL(wsdlUri), manager);
                 //System.out.println("\n----------------------------------------------------------------------------------------\n");
             }

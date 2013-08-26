@@ -5,9 +5,6 @@
 package docprocessing.util;
 
 import org.jsoup.Jsoup;
-import org.xeustechnologies.googleapi.spelling.SpellChecker;
-import org.xeustechnologies.googleapi.spelling.SpellRequest;
-import org.xeustechnologies.googleapi.spelling.SpellResponse;
 
 /**
  *
@@ -25,32 +22,28 @@ public class DocCleaning {
 //                .replaceAll("[0-9]*", " ");
 //        return Jsoup.clean(documentation, Whitelist.simpleText());
     }
-    
+
     public static String spellCorrection(String sentence) {
         String[] words = sentence.split(" ");
-        SpellChecker checker = new SpellChecker();
-        SpellRequest request = new SpellRequest();
         String correctedSentence = "";
         for (String word : words) {
-            if (word.length() > 6) {
-                request.setText(word);
-                request.setIgnoreDuplicates(true); // Ignore duplicates
-                SpellResponse spellResponse = checker.check(request);
-                System.out.println((spellResponse.getCorrections() != null) ? pickFirst(spellResponse.getCorrections()[0].getValue()) : word);
-                correctedSentence = (spellResponse.getCorrections() != null) ? correctedSentence + pickFirst(spellResponse.getCorrections()[0].getValue()) + " " : correctedSentence + word + " ";
+            if (word.isEmpty()) {
+                continue;
+            }
+            if (word.trim().length() > 6) {
+                correctedSentence = correctedSentence + TrieSpellChecker.compoundSplitter(word.trim()) + " ";
             } else {
-                System.out.println(word);
-                correctedSentence = correctedSentence + word + " ";
+//                System.out.println(word.trim());
+                correctedSentence = correctedSentence + word.trim() + " ";
             }
         }
-        System.out.println(correctedSentence);
+//        System.out.println(correctedSentence);
         return correctedSentence;
     }
-    
-    private static String pickFirst(String correctionWords) {
-        return (correctionWords.indexOf("	")!=-1) ? correctionWords.substring(0, correctionWords.indexOf("	")) : correctionWords;
-    }
 
+//    private static String pickFirst(String correctionWords) {
+//        return (correctionWords.indexOf("	")!=-1) ? correctionWords.substring(0, correctionWords.indexOf("	")) : correctionWords;
+//    }
     public static void main(String[] args) {
 
 //        System.out.println("Before cleaning: \n\n");
@@ -62,18 +55,18 @@ public class DocCleaning {
 
 //        System.out.println(doc.matches("[0-9]*"));
 //        System.out.println(doc.replaceAll("[0-9]*", " "));
-        
-        String splitCamelCase = CamelCaseFilter.splitCamelCase("Service definition of function mms  getMapAround");
-        String[] split = "disablepasswordchange".split(" ");
-        for (String string : split) {
-            System.out.println(string);
-        }
-        
-        String words = "zip code	anything";
-        
-        words = (words.indexOf("	")!=-1) ? words.substring(0, words.indexOf("	")) : words;
-        System.out.println(words);
 
+//        String splitCamelCase = CamelCaseFilter.splitCamelCase("Service definition of function mms  getMapAround");
+//        String[] split = "disablepasswordchange".split(" ");
+//        for (String string : split) {
+//            System.out.println(string);
+//        }
+//        
+//        String words = "zip code	anything";
+//        
+//        words = (words.indexOf("	")!=-1) ? words.substring(0, words.indexOf("	")) : words;
+//        System.out.println(words);
+        spellCorrection("house number numeric");
 
     }
 }
