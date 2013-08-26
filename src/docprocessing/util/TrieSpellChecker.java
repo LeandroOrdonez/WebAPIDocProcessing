@@ -40,14 +40,14 @@ public class TrieSpellChecker {
     }
 
     public static String compoundSplitter(String concatenatedWord) {
-        return compoundSplitter(concatenatedWord, 0);
+        return compoundSplitter("", concatenatedWord, 0);
     }
 
-    private static String compoundSplitter(String concatenatedWord, int level) {
+    private static String compoundSplitter(String previous, String concatenatedWord, int level) {
         if (DICT.isEmpty()) {
             initialize();
         }
-        String altConcatenatedWord = new StringBuffer(concatenatedWord).insert(concatenatedWord.length()-1, "'").toString();
+        String altConcatenatedWord = new StringBuffer(concatenatedWord).insert(concatenatedWord.length() - 1, "'").toString();
         if (DICT.contains(concatenatedWord) || DICT.contains(concatenatedWord.toLowerCase()) || DICT.contains(altConcatenatedWord) || DICT.contains(altConcatenatedWord.toLowerCase())) {
             return concatenatedWord;
         } else {
@@ -56,25 +56,25 @@ public class TrieSpellChecker {
             while (i <= concatenatedWord.length()) {
                 firstTerm = concatenatedWord.substring(0, i);
                 secondTerm = concatenatedWord.substring(i);
-                if (DICT.contains(firstTerm)) {
+                if (DICT.contains(firstTerm) || DICT.contains(firstTerm.toLowerCase())) {
                     lastGoodFirst = firstTerm;
                     if (DICT.contains(secondTerm)) {
-                        return firstTerm + " " + secondTerm;
+                        String result = previous + " " + firstTerm + " " + secondTerm;
+                        return result.trim();
                     } else {
                         i++;
                     }
                     //return firstTerm + " " + secondTerm;
-                } else {
-                    if (firstTerm.equals(concatenatedWord)) {
-                        if (level < 1 && !lastGoodFirst.equals("#none")) {
-                            return lastGoodFirst + " " + compoundSplitter(concatenatedWord.substring(lastGoodFirst.length()), level + 1);
-                        } else {
-                            return (level > 0) ? "\b" + concatenatedWord : concatenatedWord;
-                        }
+                } else if (firstTerm.equals(concatenatedWord)) {
+                    if (level < 1 && !lastGoodFirst.equals("#none")) {
+                        return compoundSplitter(lastGoodFirst, concatenatedWord.substring(lastGoodFirst.length()), level + 1);
                     } else {
-                        i++;
+                        return previous + concatenatedWord;
                     }
+                } else {
+                    i++;
                 }
+
 
             }
 //            System.out.println(lastFirstCorrect);
