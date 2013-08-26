@@ -47,7 +47,8 @@ public class TrieSpellChecker {
         if (DICT.isEmpty()) {
             initialize();
         }
-        if (DICT.contains(concatenatedWord) || DICT.contains(concatenatedWord.toLowerCase())) {
+        String altConcatenatedWord = new StringBuffer(concatenatedWord).insert(concatenatedWord.length()-1, "'").toString();
+        if (DICT.contains(concatenatedWord) || DICT.contains(concatenatedWord.toLowerCase()) || DICT.contains(altConcatenatedWord) || DICT.contains(altConcatenatedWord.toLowerCase())) {
             return concatenatedWord;
         } else {
             String firstTerm, secondTerm, lastGoodFirst = "#none";
