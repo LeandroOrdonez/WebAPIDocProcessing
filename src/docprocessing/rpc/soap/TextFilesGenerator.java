@@ -4,6 +4,7 @@
  */
 package docprocessing.rpc.soap;
 
+import docprocessing.rpc.soap.model.SoapComplexDataElement;
 import docprocessing.rpc.soap.model.SoapDataElement;
 import docprocessing.rpc.soap.model.SoapOperation;
 import docprocessing.util.CamelCaseFilter;
@@ -11,6 +12,8 @@ import docprocessing.util.DocCleaning;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,19 +55,27 @@ public class TextFilesGenerator {
             // Text file structure 2: 1-line: Operation Name
             //                        2-line: Operation Documentation (when available) 
             //                        3-line: Service Documentation (when available) OR Service Name
-            String content = acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName())) + "\n";
-            content = !operation.getOperationDocumentation().equalsIgnoreCase("This method requires a custom soap header set by the caller") ? content + acronymResolver(DocCleaning.clean(operation.getOperationDocumentation())) + "\n" : content;
-            content = operation.getSoapService().getServiceDocumentation().isEmpty() ? content + acronymResolver(CamelCaseFilter.splitCamelCase(operation.getSoapService().getServiceName())) : content + acronymResolver(DocCleaning.clean(operation.getSoapService().getServiceDocumentation()));
-            content = DocCleaning.spellCorrection(content);
+//            String content = acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName())) + "\n";
+//            content = !operation.getOperationDocumentation().equalsIgnoreCase("This method requires a custom soap header set by the caller") ? content + acronymResolver(DocCleaning.clean(operation.getOperationDocumentation())) + "\n" : content;
+//            content = operation.getSoapService().getServiceDocumentation().isEmpty() ? content + acronymResolver(CamelCaseFilter.splitCamelCase(operation.getSoapService().getServiceName())) : content + acronymResolver(DocCleaning.clean(operation.getSoapService().getServiceDocumentation()));
+//            content = DocCleaning.spellCorrection(content);
 
             //** Added just for testing purposes */
             // Text file structure 3: 1-line: Operation Name OR Operation Documentation               
             //                        n-line: Name of the n-data element of the operation
-//            String content = (operation.getOperationDocumentation().isEmpty() || operation.getOperationDocumentation().equalsIgnoreCase("This method requires a custom soap header set by the caller")) ? acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName())) + "\n"
-//                    : acronymResolver(DocCleaning.clean(operation.getOperationDocumentation())); 
-//            for (SoapDataElement data : operation.getDataElements()) {
-//                content += DocCleaning.spellCorrection(acronymResolver(CamelCaseFilter.splitCamelCase(data.getDataElementName()))) + "\n";
-//            }
+            String content = acronymResolver(CamelCaseFilter.splitCamelCase(operation.getOperationName())) + "\n";
+            content = !operation.getOperationDocumentation().equalsIgnoreCase("This method requires a custom soap header set by the caller") ? content + acronymResolver(DocCleaning.clean(operation.getOperationDocumentation())) + "\n" : content;
+            content = operation.getSoapService().getServiceDocumentation().isEmpty() ? content + acronymResolver(CamelCaseFilter.splitCamelCase(operation.getSoapService().getServiceName())) + "\n" : content + acronymResolver(DocCleaning.clean(operation.getSoapService().getServiceDocumentation())) + "\n";
+            for (SoapDataElement data : operation.getDataElements()) {
+                if (data instanceof SoapComplexDataElement) {
+                    for (SoapDataElement element : getDataElements((SoapComplexDataElement)data)) {
+                        content += acronymResolver(CamelCaseFilter.splitCamelCase(element.getDataElementName())) + "\n";
+                    }
+                } else {
+                    content += acronymResolver(CamelCaseFilter.splitCamelCase(data.getDataElementName())) + "\n";
+                }
+            }
+            content = DocCleaning.spellCorrection(content);
             //***********************************/
             out = new FileOutputStream(fileName);
             out.write(content.getBytes());
@@ -178,5 +189,17 @@ public class TextFilesGenerator {
             result += word + " ";
         }
         return result;
+    }
+    
+    private static List<SoapDataElement> getDataElements(SoapComplexDataElement data) {
+        List<SoapDataElement> dataElements = new ArrayList<>();
+        for (SoapDataElement soapDataElement : data.getDataElements()) {
+            if(soapDataElement instanceof SoapComplexDataElement) {
+                dataElements.addAll(getDataElements((SoapComplexDataElement)soapDataElement));
+            } else {
+                dataElements.add(soapDataElement);
+            }
+        }
+        return dataElements;
     }
 }
