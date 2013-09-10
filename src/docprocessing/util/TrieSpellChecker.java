@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Leandro Ordonez <leandro.ordone.ante@gmail.com>
+ * @author Leandro Ordonez <leandro.ordonez.ante@gmail.com>
  */
 public class TrieSpellChecker {
 
