@@ -5,7 +5,7 @@
 *.war
 *.ear
 build/
-dis/
+dist/
 nbproject/
 build.xml
 manifest.xml
