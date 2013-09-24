@@ -5,6 +5,8 @@
 package docprocessing.util;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -52,4 +54,19 @@ public class CamelCaseFilter extends TokenFilter {
               " "
            ).replaceAll("[-_]", "").replaceAll("  ", " ");
      }
+    
+    /**
+     * This method retrieves a list of camel case words, contained in the string passed as argument
+     *  
+     * @param s 
+     */
+    public static List<String> getCamelCaseWords(String content) {
+        List<String> camelCaseList = new ArrayList<>();
+        for (String word : content.split(" ")) {
+            if(word.matches("[aA-zZ]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*")){
+                camelCaseList.add(word);
+            }
+        }
+        return camelCaseList;
+    }
 }

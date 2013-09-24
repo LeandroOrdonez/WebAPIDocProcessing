@@ -6,6 +6,8 @@
     <class>docprocessing.rpc.soap.model.SoapDataElement</class>
     <class>docprocessing.rpc.soap.model.SoapOperation</class>
     <class>docprocessing.rpc.soap.model.SoapService</class>
+    <class>docprocessing.rpc.http.model.HTTPService</class>
+    <class>docprocessing.rpc.http.model.HTTPOperation</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/service_registry?zeroDateTimeBehavior=convertToNull"/>
       <property name="javax.persistence.jdbc.password" value=""/>
