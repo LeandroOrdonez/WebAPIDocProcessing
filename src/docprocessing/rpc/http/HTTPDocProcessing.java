@@ -37,10 +37,11 @@ import net.htmlparser.jericho.Util;
 public class HTTPDocProcessing {
 
 //     list of HTML attributes that will be retained in the final output:
-	private static final Set<String> VALID_ATTRIBUTE_NAMES=new HashSet<String>(Arrays.asList(new String[] {
-//		"id","class","href","target","title"
-            "title"
-	}));
+    private static final Set<String> VALID_ATTRIBUTE_NAMES = new HashSet<String>(Arrays.asList(new String[]{
+        //		"id","class","href","target","title"
+        "title"
+    }));
+
     public static void main(String[] args) {
         if (false) {
             System.getProperties().put("http.proxyHost", "proxy.unicauca.edu.co");
@@ -68,43 +69,8 @@ public class HTTPDocProcessing {
         String electedTag = getMostPopularTag(tagMap);
         System.out.println("Elected Tag: " + electedTag + " (" + tagMap.get(electedTag).size() + " operations)");
         List<String> operationList = tagMap.get(electedTag);
-        System.out.println("Lista de Operaciones: " + operationList);
-        try {
-            HashMap<String, String> operationMap = new HashMap<>();
-            for (Element e : cleanedHtml.getAllElements()) {
-                Source elementSource = new Source(e.getContent());
-                elementSource.fullSequentialParse();
-                List<Pair<Integer, String>> indexedCamelCaseWords = CamelCaseFilter.getIndexedCamelCaseWords(e.getContent().toString());
-                List<Pair<Integer, String>> operations = new ArrayList<>();
-                for (Pair<Integer, String> pair : indexedCamelCaseWords) {
-                    if (operationList.contains(pair.getRight())) {
-                        operations.add(pair);
-                    }
-                }
-                int numberOfMatches = 0;
-                Pair<Integer, String> match = null;
-                for (Pair<Integer, String> ccWordPair : operations) {
-//                    Element enclosingElement = elementSource.getEnclosingElement((int) ccWordPair.getLeft());
-                    System.out.println(ccWordPair);
-//                    Element parentElement = enclosingElement.getParentElement();
-                    if (e.getName().equals(electedTag)) {
-                        match = ccWordPair;
-                        numberOfMatches = numberOfMatches += 1;
-                        if (numberOfMatches > 1) {
-                            match = null;
-                            break;
-                        }
-                    }
+        HashMap<String, String> operationMap = getOperationMap(cleanedHtml, operationList, electedTag);
 
-                }
-                if (match != null) {
-                    operationMap.put(match.getRight(), e.getTextExtractor().toString());
-                }
-            }
-            System.out.println("Mapa de Operaciones: " + operationMap);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -216,23 +182,67 @@ public class HTTPDocProcessing {
         }
         return tagMap;
     }
-    
+
     private static CharSequence getStartTagHTML(StartTag startTag) {
-		// tidies and filters out non-approved attributes
-		StringBuilder sb=new StringBuilder();
-		sb.append('<').append(startTag.getName());
-	  for (Attribute attribute : startTag.getAttributes()) {
-	    if (VALID_ATTRIBUTE_NAMES.contains(attribute.getKey())) {
-				sb.append(' ').append(attribute.getName());
-				if (attribute.getValue()!=null) {
-					sb.append("=\"");
-				  sb.append(CharacterReference.encode(attribute.getValue()));
-					sb.append('"');
-				}
-			}
-	  }
-	  if (startTag.getElement().getEndTag()==null && !HTMLElements.getEndTagOptionalElementNames().contains(startTag.getName())) sb.append(" /");
-		sb.append('>');
-		return sb;
-	}
+        // tidies and filters out non-approved attributes
+        StringBuilder sb = new StringBuilder();
+        sb.append('<').append(startTag.getName());
+        for (Attribute attribute : startTag.getAttributes()) {
+            if (VALID_ATTRIBUTE_NAMES.contains(attribute.getKey())) {
+                sb.append(' ').append(attribute.getName());
+                if (attribute.getValue() != null) {
+                    sb.append("=\"");
+                    sb.append(CharacterReference.encode(attribute.getValue()));
+                    sb.append('"');
+                }
+            }
+        }
+        if (startTag.getElement().getEndTag() == null && !HTMLElements.getEndTagOptionalElementNames().contains(startTag.getName())) {
+            sb.append(" /");
+        }
+        sb.append('>');
+        return sb;
+    }
+    
+    public static HashMap<String, String> getOperationMap(Source cleanedHtml, List<String> operationList, String electedTag) {
+        System.out.println("Lista de Operaciones: " + operationList);
+        try {
+            HashMap<String, String> operationMap = new HashMap<>();
+            for (Element e : cleanedHtml.getAllElements()) {
+                Source elementSource = new Source(e.getContent());
+                elementSource.fullSequentialParse();
+                List<Pair<Integer, String>> indexedCamelCaseWords = CamelCaseFilter.getIndexedCamelCaseWords(e.getContent().toString());
+                List<Pair<Integer, String>> operations = new ArrayList<>();
+                for (Pair<Integer, String> pair : indexedCamelCaseWords) {
+                    if (operationList.contains(pair.getRight())) {
+                        operations.add(pair);
+                    }
+                }
+                int numberOfMatches = 0;
+                Pair<Integer, String> match = null;
+                for (Pair<Integer, String> ccWordPair : operations) {
+//                    Element enclosingElement = elementSource.getEnclosingElement((int) ccWordPair.getLeft());
+//                    System.out.println(ccWordPair);
+//                    Element parentElement = enclosingElement.getParentElement();
+                    if (e.getName().equals(electedTag)) {
+                        match = ccWordPair;
+                        numberOfMatches = numberOfMatches += 1;
+                        if (numberOfMatches > 1) {
+                            match = null;
+                            break;
+                        }
+                    }
+
+                }
+                if (match != null) {
+                    operationMap.put(match.getRight(), e.getTextExtractor().toString());
+                }
+            }
+            System.out.println("Mapa de Operaciones: " + operationMap);
+            return operationMap;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
