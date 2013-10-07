@@ -74,9 +74,9 @@ public class HTTPDocProcessing {
         System.out.println("Elected Tag: " + electedTag + " (" + tagMap.get(electedTag).size() + " operations)");
         List<String> operationList = tagMap.get(electedTag);
         HashMap<String, String> operationMap = getOperationMap(cleanedHtml, operationList, electedTag);
-//        for (StartTag st : cleanedHtml.getAllStartTags()) {
-//            System.out.print("<" + st.getName() + ">");
-//        }
+        for (StartTag st : cleanedHtml.getAllStartTags()) {
+            System.out.print("<" + st.getName() + ">");
+        }
 
     }
 
@@ -86,7 +86,7 @@ public class HTTPDocProcessing {
      * @return
      */
     public static OutputDocument cleanHTML(String sourceUrlString) {
-        return removeElements(sourceUrlString, HTMLElementName.SCRIPT, HTMLElementName.HEAD, HTMLElementName.LINK, HTMLElementName.IMG, HTMLElementName.HR, HTMLElementName.BR, HTMLElementName.S, HTMLElementName.COLGROUP, HTMLElementName.NOSCRIPT, HTMLElementName.SOURCE, HTMLElementName.NOFRAMES);
+        return removeElements(sourceUrlString, HTMLElementName.SCRIPT, HTMLElementName.HEAD, HTMLElementName.LINK, HTMLElementName.IMG, HTMLElementName.HR, HTMLElementName.BR, HTMLElementName.S, HTMLElementName.COLGROUP, HTMLElementName.NOSCRIPT, HTMLElementName.SOURCE, HTMLElementName.NOFRAMES, HTMLElementName.SELECT);
     }
 
     /**
@@ -116,7 +116,7 @@ public class HTTPDocProcessing {
             String outputString = outputDocument.toString();
             source = new Source(outputString);
             for (StartTag st : source.getAllStartTags()) {
-                if (st.getName().equals("em") || st.getName().equals("b") || st.getName().equals("i") || st.getName().equals("acronym") || st.getName().equals("strong") || st.getName().equals("code") || st.getName().equals("sup") || st.getName().equals("sub") || st.getName().equals("span") || st.getName().equals("small") || st.getName().equals("big")) {
+                if (st.getName().equals("em") /*|| st.getName().equals("a") */ || st.getName().equals("b") || st.getName().equals("i") || st.getName().equals("acronym") || st.getName().equals("strong") || st.getName().equals("code") || st.getName().equals("sup") || st.getName().equals("sub") || st.getName().equals("span") || st.getName().equals("small") || st.getName().equals("big")) {
                     outputString = outputString.replace(st.getElement().toString(), st.getElement().getTextExtractor().toString());
                     continue;
                 }
@@ -180,14 +180,18 @@ public class HTTPDocProcessing {
             Element parentElement = enclosingElement.getParentElement();
 //            System.out.println(parentElement.getName() + ", " + ccWord);
             if (isOperation(ccWord)) {
-                if (tagMap.containsKey(parentElement.getName())) {
-                    if (!tagMap.get(parentElement.getName()).contains(ccWord)) {
-                        tagMap.get(parentElement.getName()).add(ccWord);
+//                if (tagMap.containsKey(parentElement.getName())) {
+                if (tagMap.containsKey(enclosingElement.getName())) {
+//                    if (!tagMap.get(parentElement.getName()).contains(ccWord)) {
+//                        tagMap.get(parentElement.getName()).add(ccWord);
+                    if (!tagMap.get(enclosingElement.getName()).contains(ccWord)) {
+                        tagMap.get(enclosingElement.getName()).add(ccWord);
                     }
                 } else {
                     List<String> ccWords = new ArrayList<>();
                     ccWords.add(ccWord);
-                    tagMap.put(parentElement.getName(), ccWords);
+//                    tagMap.put(parentElement.getName(), ccWords);
+                    tagMap.put(enclosingElement.getName(), ccWords);
                 }
             }
         }
@@ -215,49 +219,7 @@ public class HTTPDocProcessing {
         return sb;
     }
 
-    public static HashMap<String, String> getOperationMap(Source cleanedHtml, List<String> operationList, String electedTag) {
-        System.out.println("Lista de Operaciones: " + operationList);
-        try {
-            HashMap<String, String> operationMap = new HashMap<>();
-            for (Element e : cleanedHtml.getAllElements()) {
-                Source elementSource = new Source(e.getContent());
-                elementSource.fullSequentialParse();
-                List<Pair<Integer, String>> indexedCamelCaseWords = CamelCaseFilter.getIndexedCamelCaseWords(e.getContent().toString());
-                List<Pair<Integer, String>> operations = new ArrayList<>();
-                for (Pair<Integer, String> pair : indexedCamelCaseWords) {
-                    if (operationList.contains(pair.getRight())) {
-                        operations.add(pair);
-                    }
-                }
-                int numberOfMatches = 0;
-                Pair<Integer, String> match = null;
-                for (Pair<Integer, String> ccWordPair : operations) {
-//                    Element enclosingElement = elementSource.getEnclosingElement((int) ccWordPair.getLeft());
-//                    System.out.println(ccWordPair);
-//                    Element parentElement = enclosingElement.getParentElement();
-                    if (e.getName().equals(electedTag)) {
-                        match = ccWordPair;
-                        numberOfMatches = numberOfMatches += 1;
-                        if (numberOfMatches > 1) {
-                            match = null;
-                            break;
-                        }
-                    }
-
-                }
-                if (match != null) {
-                    operationMap.put(match.getRight(), e.getTextExtractor().toString());
-                }
-            }
-            System.out.println("Mapa de Operaciones: " + operationMap);
-            return operationMap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-//    public static HashMap<String, String> getOperationMap2(Source cleanedHtml, List<String> operationList, String electedTag) {
+//    public static HashMap<String, String> getOperationMap(Source cleanedHtml, List<String> operationList, String electedTag) {
 //        System.out.println("Lista de Operaciones: " + operationList);
 //        try {
 //            HashMap<String, String> operationMap = new HashMap<>();
@@ -291,11 +253,40 @@ public class HTTPDocProcessing {
 //                    operationMap.put(match.getRight(), e.getTextExtractor().toString());
 //                }
 //            }
-//            System.out.println("Mapa de Operaciones: " + operationMap);
+//            System.out.println("Operation Map: " + operationMap + " -- " + operationMap.size() + " operations");
 //            return operationMap;
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //            return null;
 //        }
 //    }
+    public static HashMap<String, String> getOperationMap(Source cleanedHtml, List<String> operationList, String electedTag) {
+        System.out.println("Lista de Operaciones: " + operationList);
+        try {
+            HashMap<String, String> operationMap = new HashMap<>();
+
+            for (Element e : cleanedHtml.getAllElements(electedTag)) {
+                Source elementSource = new Source(e.getContent());
+                elementSource.fullSequentialParse();
+                List<String> camelCaseWords = CamelCaseFilter.getCamelCaseWords(e.getContent().toString());
+//                List<String> operations = new ArrayList<>();
+                for (String ccOperation : camelCaseWords) {
+                    if (operationList.contains(ccOperation)) {
+//                        operations.add(pair);
+                        operationMap.put(ccOperation, e.getTextExtractor().toString());
+                    }
+                }
+            }
+            System.out.println(/*"Operation Map: " + operationMap +*/"-- " + operationMap.size() + " operations");
+            for (String operation : operationMap.keySet()) {
+                System.out.println("\nOperation " + operation + ":");
+                System.out.print("\t" + operationMap.get(operation) + "\n");
+            }
+            System.out.println();
+            return operationMap;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
