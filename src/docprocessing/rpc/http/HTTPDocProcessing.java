@@ -47,9 +47,9 @@ public class HTTPDocProcessing {
             System.getProperties().put("http.proxyHost", "proxy.unicauca.edu.co");
             System.getProperties().put("http.proxyPort", "3128");
         }
-        String sourceUrlString = "http://www.benchmarkemail.com/API/Library";
+//        String sourceUrlString = "http://www.benchmarkemail.com/API/Library";
 //        String sourceUrlString = "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx";
-//        String sourceUrlString = "http://business.intuit.com/boorah/docs/syndication/integration.html";
+        String sourceUrlString = "http://business.intuit.com/boorah/docs/syndication/integration.html";
 //        String sourceUrlString = "http://aws.amazon.com/es/sqs/";
 //        String sourceUrlString = "http://aws.amazon.com/es/simpledb/";
 //        String sourceUrlString = "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye";
@@ -74,10 +74,14 @@ public class HTTPDocProcessing {
         System.out.println("Elected Tag: " + electedTag + " (" + tagMap.get(electedTag).size() + " operations)");
         List<String> operationList = tagMap.get(electedTag);
         HashMap<String, String> operationMap = getOperationMap(cleanedHtml, operationList, electedTag);
-        for (StartTag st : cleanedHtml.getAllStartTags()) {
+//        for (StartTag st : cleanedHtml.getAllStartTags()) {
+//            System.out.print("<" + st.getName() + ">");
+//        }
+        System.out.println();
+        Element operationContainer = getOperationContainer(cleanedHtml.getFirstElement(), operationList);
+        for (StartTag st : operationContainer.getAllStartTags()) {
             System.out.print("<" + st.getName() + ">");
         }
-
     }
 
     /**
@@ -86,7 +90,7 @@ public class HTTPDocProcessing {
      * @return
      */
     public static OutputDocument cleanHTML(String sourceUrlString) {
-        return removeElements(sourceUrlString, HTMLElementName.SCRIPT, HTMLElementName.HEAD, HTMLElementName.LINK, HTMLElementName.IMG, HTMLElementName.HR, HTMLElementName.BR, HTMLElementName.S, HTMLElementName.COLGROUP, HTMLElementName.NOSCRIPT, HTMLElementName.SOURCE, HTMLElementName.NOFRAMES, HTMLElementName.SELECT);
+        return removeElements(sourceUrlString, HTMLElementName.FONT, HTMLElementName.SCRIPT, HTMLElementName.HEAD, HTMLElementName.LINK, HTMLElementName.IMG, HTMLElementName.HR, HTMLElementName.BR, HTMLElementName.S, HTMLElementName.COLGROUP, HTMLElementName.NOSCRIPT, HTMLElementName.SOURCE, HTMLElementName.NOFRAMES, HTMLElementName.SELECT, HTMLElementName.STYLE);
     }
 
     /**
@@ -116,7 +120,7 @@ public class HTTPDocProcessing {
             String outputString = outputDocument.toString();
             source = new Source(outputString);
             for (StartTag st : source.getAllStartTags()) {
-                if (st.getName().equals("em") /*|| st.getName().equals("a") */ || st.getName().equals("b") || st.getName().equals("i") || st.getName().equals("acronym") || st.getName().equals("strong") || st.getName().equals("code") || st.getName().equals("sup") || st.getName().equals("sub") || st.getName().equals("span") || st.getName().equals("small") || st.getName().equals("big")) {
+                if (st.getName().equals("em") || st.getName().equals("a") || st.getName().equals("b") || st.getName().equals("i") || st.getName().equals("acronym") || st.getName().equals("strong") || st.getName().equals("code") || st.getName().equals("sup") || st.getName().equals("sub") || st.getName().equals("span") || st.getName().equals("small") || st.getName().equals("big")) {
                     outputString = outputString.replace(st.getElement().toString(), st.getElement().getTextExtractor().toString());
                     continue;
                 }
@@ -288,5 +292,18 @@ public class HTTPDocProcessing {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static Element getOperationContainer(Element element, List<String> operationList) {
+        for (Element childElement : element.getAllElements()) {
+            if (childElement.getDepth() == element.getDepth()+1) {
+                List<String> ccWords = CamelCaseFilter.getCamelCaseWords(childElement.getContent().toString());
+                ccWords.retainAll(operationList);
+                if (ccWords.size() >= operationList.size()) {
+                    return getOperationContainer(childElement, operationList);
+                }
+            }
+        }
+        return element;
     }
 }
