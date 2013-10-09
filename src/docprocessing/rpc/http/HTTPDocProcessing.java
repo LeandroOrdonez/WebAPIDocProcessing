@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import net.htmlparser.jericho.Attribute;
 import net.htmlparser.jericho.CharacterReference;
 import net.htmlparser.jericho.Element;
@@ -47,40 +48,46 @@ public class HTTPDocProcessing {
             System.getProperties().put("http.proxyHost", "proxy.unicauca.edu.co");
             System.getProperties().put("http.proxyPort", "3128");
         }
-//        String sourceUrlString = "http://www.benchmarkemail.com/API/Library";
-//        String sourceUrlString = "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx";
-        String sourceUrlString = "http://business.intuit.com/boorah/docs/syndication/integration.html";
-//        String sourceUrlString = "http://aws.amazon.com/es/sqs/";
-//        String sourceUrlString = "http://aws.amazon.com/es/simpledb/";
-//        String sourceUrlString = "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye";
-
-//        OutputDocument output = removeElements(sourceUrlString, HTMLElementName.SCRIPT, HTMLElementName.HEAD, HTMLElementName.LINK, HTMLElementName.IMG);
-        OutputDocument output = cleanHTML(sourceUrlString);
-//        System.out.println(output.toString());
-//        System.out.println(output.getSegment().toString());
-//        System.out.println(CamelCaseFilter.splitCamelCase("getArtist getAddress checkAddress getMovie GetWeather ResumingGame"));
-//        System.out.println(CamelCaseFilter.getCamelCaseWords("getArtist getAddress checkAddress getMovie GetWeather ResumingGame"));
-//        System.out.println(CamelCaseFilter.getIndexedCamelCaseWords("<td width=\"83%\" valign=\"top\" class=\"doc_table_body\"><a href=\"/API/Doc/emailCopy\">emailCopy</a> (<span class=\"codename\">string</span> <span class=\"codetype\">token</span>, <span class=\"codename\">string</span> <span class=\"codetype\">emailid</span>)"));
-//        System.out.println(CamelCaseFilter.getIndexedCamelCaseWords("primera operacion: getArtist, segunda: getAddress checkAddress getMovie GetWeather ResumingGame"));
-//        List<String> camelCaseList = CamelCaseFilter.getCamelCaseWords("getArtist getAddress checkAddress getMovie GetWeather ResumingGame");
-//        for (String ccWord : camelCaseList) {
-//            System.out.println(isOperation(ccWord));
-//        }
-        Source cleanedHtml = new Source(output.toString());
-        //        System.out.println(cleanedHtml.toString());
-        HashMap<String, List<String>> tagMap = getTagMap(cleanedHtml);
+        List<String> sourcesUrls = Arrays.asList(
+                "http://www.benchmarkemail.com/API/Library",
+                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
+                "http://business.intuit.com/boorah/docs/syndication/integration.html",
+                "http://aws.amazon.com/es/sqs/",
+                "http://aws.amazon.com/es/simpledb/",
+                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
+        for (String sourceUrlString : sourcesUrls) {
+            OutputDocument output = cleanHTML(sourceUrlString);
+            Source cleanedHtml = new Source(output.toString());
+//        System.out.println(cleanedHtml.toString());
+            HashMap<String, List<String>> tagMap = getTagMap(cleanedHtml);
 //        System.out.println(tagMap);
-        String electedTag = getMostPopularTag(tagMap);
-        System.out.println("Elected Tag: " + electedTag + " (" + tagMap.get(electedTag).size() + " operations)");
-        List<String> operationList = tagMap.get(electedTag);
-        HashMap<String, String> operationMap = getOperationMap(cleanedHtml, operationList, electedTag);
+            String electedTag = getMostPopularTag(tagMap);
+            System.out.println("Elected Tag: " + electedTag + " (" + tagMap.get(electedTag).size() + " operations)");
+            List<String> operationList = tagMap.get(electedTag);
+            HashMap<String, String> operationMap = getOperationMap(cleanedHtml, operationList, electedTag);
 //        for (StartTag st : cleanedHtml.getAllStartTags()) {
 //            System.out.print("<" + st.getName() + ">");
 //        }
-        System.out.println();
-        Element operationContainer = getOperationContainer(cleanedHtml.getFirstElement(), operationList);
-        for (StartTag st : operationContainer.getAllStartTags()) {
-            System.out.print("<" + st.getName() + ">");
+            Element operationContainer1 = getOperationContainer(cleanedHtml.getFirstElement(), operationList, electedTag);
+            Element operationContainer2 = getOperationContainer2(cleanedHtml.getFirstElement(), operationList, electedTag);
+
+            StringBuilder result = new StringBuilder();
+            for (StartTag st : operationContainer1.getAllStartTags()) {
+                result.append("<").append(st.getName()).append(">");
+                System.out.print("<" + st.getName() + ">");
+            }
+            String operationContainerTest1 = result.toString();
+            System.out.println("\n\n");
+            result = new StringBuilder();
+            for (StartTag st : operationContainer2.getAllStartTags()) {
+                result.append("<").append(st.getName()).append(">");
+                System.out.print("<" + st.getName() + ">");
+            }
+            String operationContainerTest2 = result.toString();
+
+            System.out.println("\nFor " + sourceUrlString + ": " + operationContainerTest1.equals(operationContainerTest2)
+                    + "\n-----------------------------------------------------------------------------------------------------------------------------"
+                    + "\n-----------------------------------------------------------------------------------------------------------------------------");
         }
     }
 
@@ -120,9 +127,16 @@ public class HTTPDocProcessing {
             String outputString = outputDocument.toString();
             source = new Source(outputString);
             for (StartTag st : source.getAllStartTags()) {
-                if (st.getName().equals("em") || st.getName().equals("a") || st.getName().equals("b") || st.getName().equals("i") || st.getName().equals("acronym") || st.getName().equals("strong") || st.getName().equals("code") || st.getName().equals("sup") || st.getName().equals("sub") || st.getName().equals("span") || st.getName().equals("small") || st.getName().equals("big")) {
-                    outputString = outputString.replace(st.getElement().toString(), st.getElement().getTextExtractor().toString());
-                    continue;
+//                if (st.getName().equals("em") || st.getName().equals("acronym")) {
+//                    System.out.println(st.getElement().toString());
+//                    System.out.println(st.getElement().getTextExtractor().toString());
+//                }
+                if (st.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|span|small|big")) {
+                    String pt = st.getElement().getParentElement().getName();
+                    if (!(pt.matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|span|small|big"))) {
+                        outputString = outputString.replaceFirst(Pattern.quote(st.getElement().toString()), st.getElement().getTextExtractor().toString());
+                        continue;
+                    }
                 }
                 String cleanStartTag = getStartTagHTML(st).toString();
                 outputString = outputString.replace(st.toString(), cleanStartTag);
@@ -282,10 +296,10 @@ public class HTTPDocProcessing {
                 }
             }
             System.out.println(/*"Operation Map: " + operationMap +*/"-- " + operationMap.size() + " operations");
-            for (String operation : operationMap.keySet()) {
-                System.out.println("\nOperation " + operation + ":");
-                System.out.print("\t" + operationMap.get(operation) + "\n");
-            }
+//            for (String operation : operationMap.keySet()) {
+//                System.out.println("\nOperation " + operation + ":");
+//                System.out.print("\t" + operationMap.get(operation) + "\n");
+//            }
             System.out.println();
             return operationMap;
         } catch (Exception e) {
@@ -294,13 +308,51 @@ public class HTTPDocProcessing {
         }
     }
 
-    public static Element getOperationContainer(Element element, List<String> operationList) {
+    public static Element getOperationContainer(Element element, List<String> operationList, String electedTag) {
+        for (Element childElement : element.getAllElements(electedTag)) {
+            while (childElement.getParentElement() != null) {
+                List<String> ccWords = CamelCaseFilter.getCamelCaseWords(childElement.getContent().toString());
+                ccWords.retainAll(operationList);
+                if (ccWords.isEmpty() || (ccWords.size() > 1 && childElement.getName().equals(electedTag))) {
+                    break;
+                }
+                Element parent = childElement.getParentElement();
+                ccWords = CamelCaseFilter.getCamelCaseWords(parent.getContent().toString());
+                ccWords.retainAll(operationList);
+                if (ccWords.isEmpty()) {
+                    break;
+                }
+                HashSet hs = new HashSet();
+                hs.addAll(ccWords);
+                ccWords.clear();
+                ccWords.addAll(hs);
+                if (ccWords.size() < operationList.size()-1) {
+                    childElement = parent;
+                } else {
+                    return parent;
+                }
+            }
+        }
+        return element;
+//        for (Element childElement : element.getAllElements()) {
+//            if (childElement.getDepth() == element.getDepth()+1) {
+//                List<String> ccWords = CamelCaseFilter.getCamelCaseWords(childElement.getContent().toString());
+//                ccWords.retainAll(operationList);
+//                if (ccWords.size() >= operationList.size()) {
+//                    return getOperationContainer(childElement, operationList, electedTag);
+//                }
+//            }
+//        }
+//        return element;
+    }
+
+    public static Element getOperationContainer2(Element element, List<String> operationList, String electedTag) {
         for (Element childElement : element.getAllElements()) {
-            if (childElement.getDepth() == element.getDepth()+1) {
+            if (childElement.getDepth() == element.getDepth() + 1) {
                 List<String> ccWords = CamelCaseFilter.getCamelCaseWords(childElement.getContent().toString());
                 ccWords.retainAll(operationList);
                 if (ccWords.size() >= operationList.size()) {
-                    return getOperationContainer(childElement, operationList);
+                    return getOperationContainer2(childElement, operationList, electedTag);
                 }
             }
         }
