@@ -49,12 +49,15 @@ public class HTTPDocProcessing {
             System.getProperties().put("http.proxyPort", "3128");
         }
         List<String> sourcesUrls = Arrays.asList(
-                "http://www.benchmarkemail.com/API/Library",
-                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
-                "http://business.intuit.com/boorah/docs/syndication/integration.html",
-                "http://aws.amazon.com/es/sqs/",
-                "http://aws.amazon.com/es/simpledb/",
-                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
+                "http://blogspam.net/api/1.0/");//,
+//                "http://help.4shared.com/index.php/SOAP_API",
+//                "http://developer.affili.net/desktopdefault.aspx/tabid-93");//,
+//                "http://www.benchmarkemail.com/API/Library",
+//                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
+//                "http://business.intuit.com/boorah/docs/syndication/integration.html",
+//                "http://aws.amazon.com/es/sqs/",
+//                "http://aws.amazon.com/es/simpledb/",
+//                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
         for (String sourceUrlString : sourcesUrls) {
             OutputDocument output = cleanHTML(sourceUrlString);
             Source cleanedHtml = new Source(output.toString());
@@ -97,7 +100,7 @@ public class HTTPDocProcessing {
      * @return
      */
     public static OutputDocument cleanHTML(String sourceUrlString) {
-        return removeElements(sourceUrlString, HTMLElementName.FONT, HTMLElementName.SCRIPT, HTMLElementName.HEAD, HTMLElementName.LINK, HTMLElementName.IMG, HTMLElementName.HR, HTMLElementName.BR, HTMLElementName.S, HTMLElementName.COLGROUP, HTMLElementName.NOSCRIPT, HTMLElementName.SOURCE, HTMLElementName.NOFRAMES, HTMLElementName.SELECT, HTMLElementName.STYLE);
+        return removeElements(sourceUrlString, HTMLElementName.SCRIPT, HTMLElementName.HEAD, HTMLElementName.LINK, HTMLElementName.IMG, HTMLElementName.HR, HTMLElementName.BR, HTMLElementName.S, HTMLElementName.COLGROUP, HTMLElementName.NOSCRIPT, HTMLElementName.SOURCE, HTMLElementName.NOFRAMES, HTMLElementName.SELECT, HTMLElementName.STYLE);
     }
 
     /**
@@ -127,15 +130,30 @@ public class HTTPDocProcessing {
             String outputString = outputDocument.toString();
             source = new Source(outputString);
             for (StartTag st : source.getAllStartTags()) {
-//                if (st.getName().equals("em") || st.getName().equals("acronym")) {
+//                if (st.getName().equals("span")){// || st.getName().equals("acronym")) {
 //                    System.out.println(st.getElement().toString());
 //                    System.out.println(st.getElement().getTextExtractor().toString());
 //                }
-                if (st.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|span|small|big")) {
-                    String pt = st.getElement().getParentElement().getName();
-                    if (!(pt.matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|span|small|big"))) {
-                        outputString = outputString.replaceFirst(Pattern.quote(st.getElement().toString()), st.getElement().getTextExtractor().toString());
+                if (st.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font")) {
+                    Element pt = st.getElement().getParentElement();
+                    if (!(pt.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font"))) {
+                        outputString = outputString.replaceFirst(Pattern.quote(st.getElement().toString()), st.getElement().getContent().toString());
+                        if(outputString.indexOf(st.getElement().toString())!= -1){
+                            System.out.println("\nSomething went wrong!: " + st.getElement().toString());
+                        } else {
+                            System.out.println("\n" + st.getElement().toString() + "\n\nwas replaced with:\n\n" + st.getElement().getContent().toString());
+                        }
                         continue;
+                    }
+                    else {
+//                        System.out.println("\nSomething went wrong!: \n\n" + st.getElement().toString() + "\n\n !!!! Parent: " + pt.toString());
+                        outputString = outputString.replaceFirst(Pattern.quote(pt.toString()), pt.getContent().toString());
+                        outputString = outputString.replaceFirst(Pattern.quote(st.getElement().toString()), st.getElement().getContent().toString());
+                        if(outputString.indexOf(st.getElement().toString())!= -1){
+                            System.out.println("\nSomething went wrong!: " + st.getElement().toString());
+                        } else {
+                            System.out.println("\n" + st.getElement().toString() + "\n\nwas replaced with:\n\n" + st.getElement().getContent().toString());
+                        }
                     }
                 }
                 String cleanStartTag = getStartTagHTML(st).toString();
