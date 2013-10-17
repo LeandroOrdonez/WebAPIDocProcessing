@@ -49,15 +49,15 @@ public class HTTPDocProcessing {
             System.getProperties().put("http.proxyPort", "3128");
         }
         List<String> sourcesUrls = Arrays.asList(
-                "http://blogspam.net/api/1.0/");//,
-//                "http://help.4shared.com/index.php/SOAP_API",
-//                "http://developer.affili.net/desktopdefault.aspx/tabid-93");//,
-//                "http://www.benchmarkemail.com/API/Library",
-//                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
-//                "http://business.intuit.com/boorah/docs/syndication/integration.html",
-//                "http://aws.amazon.com/es/sqs/",
-//                "http://aws.amazon.com/es/simpledb/",
-//                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
+                "http://blogspam.net/api/1.0/",
+                "http://help.4shared.com/index.php/SOAP_API",
+                "http://developer.affili.net/desktopdefault.aspx/tabid-93",
+                "http://www.benchmarkemail.com/API/Library",
+                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
+                "http://business.intuit.com/boorah/docs/syndication/integration.html",
+                "http://aws.amazon.com/es/sqs/",
+                "http://aws.amazon.com/es/simpledb/",
+                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
         for (String sourceUrlString : sourcesUrls) {
             OutputDocument output = cleanHTML(sourceUrlString);
             Source cleanedHtml = new Source(output.toString());
@@ -134,27 +134,9 @@ public class HTTPDocProcessing {
 //                    System.out.println(st.getElement().toString());
 //                    System.out.println(st.getElement().getTextExtractor().toString());
 //                }
-                if (st.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font")) {
-                    Element pt = st.getElement().getParentElement();
-                    if (!(pt.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font"))) {
-                        outputString = outputString.replaceFirst(Pattern.quote(st.getElement().toString()), st.getElement().getContent().toString());
-                        if(outputString.indexOf(st.getElement().toString())!= -1){
-                            System.out.println("\nSomething went wrong!: " + st.getElement().toString());
-                        } else {
-                            System.out.println("\n" + st.getElement().toString() + "\n\nwas replaced with:\n\n" + st.getElement().getContent().toString());
-                        }
-                        continue;
-                    }
-                    else {
-//                        System.out.println("\nSomething went wrong!: \n\n" + st.getElement().toString() + "\n\n !!!! Parent: " + pt.toString());
-                        outputString = outputString.replaceFirst(Pattern.quote(pt.toString()), pt.getContent().toString());
-                        outputString = outputString.replaceFirst(Pattern.quote(st.getElement().toString()), st.getElement().getContent().toString());
-                        if(outputString.indexOf(st.getElement().toString())!= -1){
-                            System.out.println("\nSomething went wrong!: " + st.getElement().toString());
-                        } else {
-                            System.out.println("\n" + st.getElement().toString() + "\n\nwas replaced with:\n\n" + st.getElement().getContent().toString());
-                        }
-                    }
+                if (st.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font|label")) {
+                    outputString = removeFormattingTag(st, outputString);
+                    continue;
                 }
                 String cleanStartTag = getStartTagHTML(st).toString();
                 outputString = outputString.replace(st.toString(), cleanStartTag);
@@ -170,6 +152,22 @@ public class HTTPDocProcessing {
             Logger.getLogger(HTTPDocProcessing.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
+    }
+
+    public static String removeFormattingTag(StartTag startTag, String outputString) {
+        StartTag parentTag = startTag.getElement().getParentElement().getStartTag();
+        if (!(parentTag.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font|label"))) {
+            outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
+//            if (outputString.indexOf(startTag.getElement().toString()) != -1) {
+//                System.out.println("\nSomething went wrong!: " + startTag.getElement().toString());
+//            } else {
+//                System.out.println("\n" + startTag.getElement().toString() + "\n\nwas replaced with:\n\n" + startTag.getElement().getContent().toString());
+//            }
+        } else {
+            outputString = removeFormattingTag(parentTag, outputString);
+            outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
+        }
+        return outputString;
     }
 
     /**
@@ -344,7 +342,7 @@ public class HTTPDocProcessing {
                 hs.addAll(ccWords);
                 ccWords.clear();
                 ccWords.addAll(hs);
-                if (ccWords.size() < operationList.size()-1) {
+                if (ccWords.size() < operationList.size() - 1) {
                     childElement = parent;
                 } else {
                     return parent;
