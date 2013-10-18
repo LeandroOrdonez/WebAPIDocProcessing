@@ -7,15 +7,20 @@ package docprocessing.rpc.http;
 import docprocessing.util.CamelCaseFilter;
 import docprocessing.util.POSTagger;
 import docprocessing.util.Pair;
+import docprocessing.util.suffixtree.AbstractSuffixTree;
+import docprocessing.util.suffixtree.SimpleSuffixTree;
+import docprocessing.util.suffixtree.SuffixTreeNode;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,6 +47,68 @@ public class HTTPDocProcessing {
         //		"id","class","href","target","title"
         "title"
     }));
+    public static final Map<String, String> encodedElements = Collections
+            .unmodifiableMap(new HashMap<String, String>() {
+        {
+            put(HTMLElementName.HTML, "0");
+            put(HTMLElementName.BODY, "1");
+            put(HTMLElementName.DIV, "2");
+            put(HTMLElementName.P, "3");
+            put(HTMLElementName.TABLE, "4");
+            put(HTMLElementName.THEAD, "5");
+            put(HTMLElementName.TBODY, "6");
+            put(HTMLElementName.TFOOT, "7");
+            put(HTMLElementName.CAPTION, "8");
+            put(HTMLElementName.TH, "9");
+            put(HTMLElementName.TR, "A");
+            put(HTMLElementName.TD, "B");
+            put(HTMLElementName.UL, "C");
+            put(HTMLElementName.OL, "D");
+            put(HTMLElementName.LI, "E");
+            put(HTMLElementName.DL, "F");
+            put(HTMLElementName.DT, "G");
+            put(HTMLElementName.DD, "H");
+            put(HTMLElementName.FORM, "I");
+            put(HTMLElementName.INPUT, "J");
+            put(HTMLElementName.H1, "K");
+            put(HTMLElementName.H2, "L");
+            put(HTMLElementName.H3, "M");
+            put(HTMLElementName.H4, "N");
+            put(HTMLElementName.H5, "O");
+            put(HTMLElementName.H6, "P");
+        }
+    });
+    public static final Map<String, String> decodedElements = Collections
+            .unmodifiableMap(new HashMap<String, String>() {
+        {
+            put("0", HTMLElementName.HTML);
+            put("1", HTMLElementName.BODY);
+            put("2", HTMLElementName.DIV);
+            put("3", HTMLElementName.P);
+            put("4", HTMLElementName.TABLE);
+            put("5", HTMLElementName.THEAD);
+            put("6", HTMLElementName.TBODY);
+            put("7", HTMLElementName.TFOOT);
+            put("8", HTMLElementName.CAPTION);
+            put("9", HTMLElementName.TH);
+            put("A", HTMLElementName.TR);
+            put("B", HTMLElementName.TD);
+            put("C", HTMLElementName.UL);
+            put("D", HTMLElementName.OL);
+            put("E", HTMLElementName.LI);
+            put("F", HTMLElementName.DL);
+            put("G", HTMLElementName.DT);
+            put("H", HTMLElementName.DD);
+            put("I", HTMLElementName.FORM);
+            put("J", HTMLElementName.INPUT);
+            put("K", HTMLElementName.H1);
+            put("L", HTMLElementName.H2);
+            put("M", HTMLElementName.H3);
+            put("N", HTMLElementName.H4);
+            put("O", HTMLElementName.H5);
+            put("P", HTMLElementName.H6);
+        }
+    });
 
     public static void main(String[] args) {
         if (false) {
@@ -49,15 +116,15 @@ public class HTTPDocProcessing {
             System.getProperties().put("http.proxyPort", "3128");
         }
         List<String> sourcesUrls = Arrays.asList(
-                "http://blogspam.net/api/1.0/",
-                "http://help.4shared.com/index.php/SOAP_API",
-                "http://developer.affili.net/desktopdefault.aspx/tabid-93",
-                "http://www.benchmarkemail.com/API/Library",
-                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
-                "http://business.intuit.com/boorah/docs/syndication/integration.html",
-                "http://aws.amazon.com/es/sqs/",
-                "http://aws.amazon.com/es/simpledb/",
-                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
+//                "http://blogspam.net/api/1.0/",
+                "http://help.4shared.com/index.php/SOAP_API");//,
+//                "http://developer.affili.net/desktopdefault.aspx/tabid-93",
+//                "http://www.benchmarkemail.com/API/Library",
+//                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
+//                "http://business.intuit.com/boorah/docs/syndication/integration.html",
+//                "http://aws.amazon.com/es/sqs/",
+//                "http://aws.amazon.com/es/simpledb/",
+//                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
         for (String sourceUrlString : sourcesUrls) {
             OutputDocument output = cleanHTML(sourceUrlString);
             Source cleanedHtml = new Source(output.toString());
@@ -72,35 +139,61 @@ public class HTTPDocProcessing {
 //            System.out.print("<" + st.getName() + ">");
 //        }
             Element operationContainer1 = getOperationContainer(cleanedHtml.getFirstElement(), operationList, electedTag);
-            Element operationContainer2 = getOperationContainer2(cleanedHtml.getFirstElement(), operationList, electedTag);
+//            Element operationContainer2 = getOperationContainer2(cleanedHtml.getFirstElement(), operationList, electedTag);
 
             StringBuilder result = new StringBuilder();
             for (StartTag st : operationContainer1.getAllStartTags()) {
-                result.append("<").append(st.getName()).append(">");
+//                result.append("<").append(st.getName()).append(">");
+                result.append(encodedElements.get(st.getName()));
                 System.out.print("<" + st.getName() + ">");
             }
             String operationContainerTest1 = result.toString();
-            System.out.println("\n\n");
-            result = new StringBuilder();
-            for (StartTag st : operationContainer2.getAllStartTags()) {
-                result.append("<").append(st.getName()).append(">");
-                System.out.print("<" + st.getName() + ">");
-            }
-            String operationContainerTest2 = result.toString();
+            System.out.println("\n\n" + operationContainerTest1 + "\n\n");
 
-            System.out.println("\nFor " + sourceUrlString + ": " + operationContainerTest1.equals(operationContainerTest2)
-                    + "\n-----------------------------------------------------------------------------------------------------------------------------"
-                    + "\n-----------------------------------------------------------------------------------------------------------------------------");
+            AbstractSuffixTree tree = new SimpleSuffixTree(operationContainerTest1);
+            String pattern;
+            for (SuffixTreeNode node : tree.bestNodes) {
+//                System.out.println(node.printResult() + " repetitions=" + node.visits);
+                if(node.visits == operationList.size()) {
+                    pattern = node.printResult();
+                    System.out.println(translatePattern(pattern));
+                    break;
+                }
+            }
+//            System.out.println("\n\n");
+//            result = new StringBuilder();
+//            for (StartTag st : operationContainer2.getAllStartTags()) {
+//                result.append("<").append(st.getName()).append(">");
+//                System.out.print("<" + st.getName() + ">");
+//            }
+//            String operationContainerTest2 = result.toString();
+//
+//            System.out.println("\nFor " + sourceUrlString + ": " + operationContainerTest1.equals(operationContainerTest2)
+//                    + "\n-----------------------------------------------------------------------------------------------------------------------------"
+//                    + "\n-----------------------------------------------------------------------------------------------------------------------------");
         }
     }
 
+    /**
+     *
+     * @param pattern
+     * @return
+     */
+    public static String translatePattern(String pattern) {
+        StringBuilder result = new StringBuilder();
+        for(int i = 0; i < pattern.length(); i++) {
+            result.append("<").append(decodedElements.get(String.valueOf(pattern.charAt(i)))).append(">");
+        }
+        return result.toString();
+    }
+    
     /**
      *
      * @param sourceUrlString
      * @return
      */
     public static OutputDocument cleanHTML(String sourceUrlString) {
-        return removeElements(sourceUrlString, HTMLElementName.SCRIPT, HTMLElementName.HEAD, HTMLElementName.LINK, HTMLElementName.IMG, HTMLElementName.HR, HTMLElementName.BR, HTMLElementName.S, HTMLElementName.COLGROUP, HTMLElementName.NOSCRIPT, HTMLElementName.SOURCE, HTMLElementName.NOFRAMES, HTMLElementName.SELECT, HTMLElementName.STYLE);
+        return removeElements(sourceUrlString, HTMLElementName.SCRIPT, HTMLElementName.HEAD, HTMLElementName.LINK, HTMLElementName.IMG, HTMLElementName.HR, HTMLElementName.BR, HTMLElementName.S, HTMLElementName.COLGROUP, HTMLElementName.NOSCRIPT, HTMLElementName.SOURCE, HTMLElementName.NOFRAMES, HTMLElementName.SELECT, HTMLElementName.STYLE, HTMLElementName.DATALIST, HTMLElementName.DEL);
     }
 
     /**
@@ -134,7 +227,7 @@ public class HTTPDocProcessing {
 //                    System.out.println(st.getElement().toString());
 //                    System.out.println(st.getElement().getTextExtractor().toString());
 //                }
-                if (st.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font|label")) {
+                if (st.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font|label|tt|legend|ins")) {
                     outputString = removeFormattingTag(st, outputString);
                     continue;
                 }
@@ -154,9 +247,15 @@ public class HTTPDocProcessing {
         }
     }
 
+    /**
+     *
+     * @param startTag
+     * @param outputString
+     * @return
+     */
     public static String removeFormattingTag(StartTag startTag, String outputString) {
         StartTag parentTag = startTag.getElement().getParentElement().getStartTag();
-        if (!(parentTag.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font|label"))) {
+        if (!(parentTag.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font|label|tt|legend|ins"))) {
             outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
 //            if (outputString.indexOf(startTag.getElement().toString()) != -1) {
 //                System.out.println("\nSomething went wrong!: " + startTag.getElement().toString());
