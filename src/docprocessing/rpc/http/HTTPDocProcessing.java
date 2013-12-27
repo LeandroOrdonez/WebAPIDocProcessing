@@ -116,15 +116,15 @@ public class HTTPDocProcessing {
             System.getProperties().put("http.proxyPort", "3128");
         }
         List<String> sourcesUrls = Arrays.asList(
-//                "http://blogspam.net/api/1.0/",
-                "http://help.4shared.com/index.php/SOAP_API");//,
-//                "http://developer.affili.net/desktopdefault.aspx/tabid-93",
-//                "http://www.benchmarkemail.com/API/Library",
-//                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
-//                "http://business.intuit.com/boorah/docs/syndication/integration.html",
-//                "http://aws.amazon.com/es/sqs/",
-//                "http://aws.amazon.com/es/simpledb/",
-//                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
+                "http://blogspam.net/api/1.0/",
+//                "http://help.4shared.com/index.php/SOAP_API#addToFavorites");//,
+                "http://developer.affili.net/desktopdefault.aspx/tabid-93",
+                "http://www.benchmarkemail.com/API/Library",
+                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
+                "http://business.intuit.com/boorah/docs/syndication/integration.html",
+                "http://aws.amazon.com/es/sqs/",
+                "http://aws.amazon.com/es/simpledb/",
+                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
         for (String sourceUrlString : sourcesUrls) {
             OutputDocument output = cleanHTML(sourceUrlString);
             Source cleanedHtml = new Source(output.toString());
@@ -138,28 +138,28 @@ public class HTTPDocProcessing {
 //        for (StartTag st : cleanedHtml.getAllStartTags()) {
 //            System.out.print("<" + st.getName() + ">");
 //        }
-            Element operationContainer1 = getOperationContainer(cleanedHtml.getFirstElement(), operationList, electedTag);
-//            Element operationContainer2 = getOperationContainer2(cleanedHtml.getFirstElement(), operationList, electedTag);
-
-            StringBuilder result = new StringBuilder();
-            for (StartTag st : operationContainer1.getAllStartTags()) {
-//                result.append("<").append(st.getName()).append(">");
-                result.append(encodedElements.get(st.getName()));
-                System.out.print("<" + st.getName() + ">");
-            }
-            String operationContainerTest1 = result.toString();
-            System.out.println("\n\n" + operationContainerTest1 + "\n\n");
-
-            AbstractSuffixTree tree = new SimpleSuffixTree(operationContainerTest1);
-            String pattern;
-            for (SuffixTreeNode node : tree.bestNodes) {
-//                System.out.println(node.printResult() + " repetitions=" + node.visits);
-                if(node.visits == operationList.size()) {
-                    pattern = node.printResult();
-                    System.out.println(translatePattern(pattern));
-                    break;
-                }
-            }
+//            Element operationContainer1 = getOperationContainer(cleanedHtml.getFirstElement(), operationList, electedTag);
+////            Element operationContainer2 = getOperationContainer2(cleanedHtml.getFirstElement(), operationList, electedTag);
+//
+//            StringBuilder result = new StringBuilder();
+//            for (StartTag st : operationContainer1.getAllStartTags()) {
+////                result.append("<").append(st.getName()).append(">");
+//                result.append(encodedElements.get(st.getName()));
+//                System.out.print("<" + st.getName() + ">");
+//            }
+//            String operationContainerTest1 = result.toString();
+//            System.out.println("\n\n" + operationContainerTest1 + "\n\n");
+//
+//            AbstractSuffixTree tree = new SimpleSuffixTree(operationContainerTest1);
+//            String pattern;
+//            for (SuffixTreeNode node : tree.bestNodes) {
+////                System.out.println(node.printResult() + " repetitions=" + node.visits);
+//                if (node.visits == operationList.size()) {
+//                    pattern = node.printResult();
+//                    System.out.println(translatePattern(pattern));
+//                    break;
+//                }
+//            }
 //            System.out.println("\n\n");
 //            result = new StringBuilder();
 //            for (StartTag st : operationContainer2.getAllStartTags()) {
@@ -181,12 +181,12 @@ public class HTTPDocProcessing {
      */
     public static String translatePattern(String pattern) {
         StringBuilder result = new StringBuilder();
-        for(int i = 0; i < pattern.length(); i++) {
+        for (int i = 0; i < pattern.length(); i++) {
             result.append("<").append(decodedElements.get(String.valueOf(pattern.charAt(i)))).append(">");
         }
         return result.toString();
     }
-    
+
     /**
      *
      * @param sourceUrlString
@@ -208,7 +208,8 @@ public class HTTPDocProcessing {
         }
         try {
             URL sourceUrl = new URL(sourceUrlString);
-            String htmlText = Util.getString(new InputStreamReader(sourceUrl.openStream()));
+            String htmlText = Util.getString(new InputStreamReader(sourceUrl.openStream())).replaceAll("(var\\s.*(;|\"))|(&lt;.*&gt;)", "");
+//            String htmlText = Util.getString(new InputStreamReader(sourceUrl.openStream())).replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", "\"");
             Source source = new Source(htmlText);
             OutputDocument outputDocument = new OutputDocument(source);
 //            List<Element> elementsToDelete = new ArrayList<>();
@@ -220,6 +221,8 @@ public class HTTPDocProcessing {
             outputDocument.remove(source.getAllElements(StartTagType.XML_DECLARATION));
             outputDocument.remove(source.getAllElements(StartTagType.CDATA_SECTION));
             outputDocument.remove(source.getAllElements(StartTagType.SERVER_COMMON));
+            outputDocument.remove(source.getAllElements(StartTagType.SERVER_COMMON_COMMENT));
+            outputDocument.remove(source.getAllElements(StartTagType.SERVER_COMMON_ESCAPED));
             String outputString = outputDocument.toString();
             source = new Source(outputString);
             for (StartTag st : source.getAllStartTags()) {
@@ -236,6 +239,9 @@ public class HTTPDocProcessing {
             }
             source = new Source(outputString);
             outputDocument = new OutputDocument(source);
+            outputDocument.remove(source.getAllElements(StartTagType.UNREGISTERED));
+            outputDocument.remove(source.getAllElements(StartTagType.XML_DECLARATION));
+            outputDocument.remove(source.getAllElements(StartTagType.XML_PROCESSING_INSTRUCTION));
 //            System.out.println(outputDocument.toString());
             return outputDocument;
         } catch (MalformedURLException ex) {
@@ -255,16 +261,43 @@ public class HTTPDocProcessing {
      */
     public static String removeFormattingTag(StartTag startTag, String outputString) {
         StartTag parentTag = startTag.getElement().getParentElement().getStartTag();
+//        if (startTag.getName().equals("span") && startTag.getElement().getTextExtractor().toString().equals("getSharedDirItems")) {
+//            System.out.println("STOOOOP!!");
+//        }
         if (!(parentTag.getName().matches("em|a|b|i|acronym|blockquote|strong|code|sup|sub|small|big|pre|span|font|label|tt|legend|ins"))) {
-            outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
+            if (startTag.getName().equals("a")) {
+//                String href = startTag.getAttributeValue("href");
+//                if (href != null && href.equals("#getSharedDirItems")) {
+//                    System.out.println("STOP!!");
+//                    System.out.println("Starts with #: " + href.startsWith("#"));
+//                    System.out.println(startTag.getElement().toString());
+//                    System.out.println(startTag.getElement().getContent().toString());
+//                }
+                outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), ((startTag.getAttributeValue("href") != null) && startTag.getAttributeValue("href").startsWith("#")) ? "" : startTag.getElement().getContent().toString());
+            } else {
+                outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
 //            if (outputString.indexOf(startTag.getElement().toString()) != -1) {
 //                System.out.println("\nSomething went wrong!: " + startTag.getElement().toString());
 //            } else {
 //                System.out.println("\n" + startTag.getElement().toString() + "\n\nwas replaced with:\n\n" + startTag.getElement().getContent().toString());
 //            }
+            }
         } else {
+//            outputString = removeFormattingTag(parentTag, outputString);
+//            if (startTag.getName().equals("a")) {
+//                outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), ((startTag.getAttributeValue("href") != null) && startTag.getAttributeValue("href").startsWith("#")) ? "" : startTag.getElement().getContent().toString());
+//            } else {
+//                outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
+//            }
             outputString = removeFormattingTag(parentTag, outputString);
-            outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
+            if (!(parentTag.getName().equals("a") && parentTag.getAttributeValue("href") != null && parentTag.getAttributeValue("href").startsWith("#"))) {
+                if (startTag.getName().equals("a")) {
+                    outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), ((startTag.getAttributeValue("href") != null) && startTag.getAttributeValue("href").startsWith("#")) ? "" : startTag.getElement().getContent().toString());
+                } else {
+                    outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
+                }
+            }
+//            outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
         }
         return outputString;
     }
@@ -278,6 +311,10 @@ public class HTTPDocProcessing {
         POSTagger tagger = POSTagger.getInstance();
         String tagString = tagger.tagString(CamelCaseFilter.splitCamelCase(ccWord));
 //        System.out.println(tagString);
+//        Pattern p = Pattern.compile("([a-zA-Z_0-9]+(_VB))(.*)([a-zA-Z_0-9]+(_NN))");//, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+//        Matcher m = p.matcher(tagString);
+////        return tagString.matches("([a-zA-Z_0-9]+(_VB))(.*)([a-zA-Z_0-9]+(_NN))");
+//        return m.find();
         return tagString.contains("_VB") && tagString.contains("_NN");
     }
 
@@ -306,11 +343,15 @@ public class HTTPDocProcessing {
     public static HashMap<String, List<String>> getTagMap(Source htmlSource) {
         htmlSource.fullSequentialParse();
         List<Pair<Integer, String>> indexedCamelCaseWords = CamelCaseFilter.getIndexedCamelCaseWords(htmlSource.toString());
+        List<String> camelCaseWords = CamelCaseFilter.getCamelCaseWords(htmlSource.toString());
         HashMap<String, List<String>> tagMap = new HashMap<>();
         for (Pair p : indexedCamelCaseWords) {
             String ccWord = p.getRight().toString();
             Element enclosingElement = htmlSource.getEnclosingElement((int) p.getLeft());
-            Element parentElement = enclosingElement.getParentElement();
+//            if (CamelCaseFilter.getCamelCaseWords(enclosingElement.getContent().toString()).size() > 1) {
+//                continue;
+//            }
+//            Element parentElement = enclosingElement.getParentElement();
 //            System.out.println(parentElement.getName() + ", " + ccWord);
             if (isOperation(ccWord)) {
 //                if (tagMap.containsKey(parentElement.getName())) {
@@ -330,7 +371,7 @@ public class HTTPDocProcessing {
         }
         return tagMap;
     }
-
+    
     private static CharSequence getStartTagHTML(StartTag startTag) {
         // tidies and filters out non-approved attributes
         StringBuilder sb = new StringBuilder();
@@ -411,10 +452,10 @@ public class HTTPDocProcessing {
                 }
             }
             System.out.println(/*"Operation Map: " + operationMap +*/"-- " + operationMap.size() + " operations");
-//            for (String operation : operationMap.keySet()) {
-//                System.out.println("\nOperation " + operation + ":");
-//                System.out.print("\t" + operationMap.get(operation) + "\n");
-//            }
+            for (String operation : operationMap.keySet()) {
+                System.out.println("\nOperation " + operation + ":");
+                System.out.print("\t" + operationMap.get(operation) + "\n");
+            }
             System.out.println();
             return operationMap;
         } catch (Exception e) {
