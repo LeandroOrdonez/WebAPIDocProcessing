@@ -10,6 +10,7 @@ import docprocessing.util.Pair;
 import docprocessing.util.suffixtree.AbstractSuffixTree;
 import docprocessing.util.suffixtree.SimpleSuffixTree;
 import docprocessing.util.suffixtree.SuffixTreeNode;
+import edu.stanford.nlp.util.CacheMap;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -35,6 +36,9 @@ import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.StartTag;
 import net.htmlparser.jericho.StartTagType;
 import net.htmlparser.jericho.Util;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 /**
  *
@@ -117,7 +121,7 @@ public class HTTPDocProcessing {
         }
         List<String> sourcesUrls = Arrays.asList(
                 "http://blogspam.net/api/1.0/",
-//                "http://help.4shared.com/index.php/SOAP_API#addToFavorites");//,
+                  //                "http://help.4shared.com/index.php/SOAP_API#addToFavorites");//,
                 "http://developer.affili.net/desktopdefault.aspx/tabid-93",
                 "http://www.benchmarkemail.com/API/Library",
                 "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
@@ -126,15 +130,17 @@ public class HTTPDocProcessing {
                 "http://aws.amazon.com/es/simpledb/",
                 "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
         for (String sourceUrlString : sourcesUrls) {
+            System.out.println("URI: " + sourceUrlString);
             OutputDocument output = cleanHTML(sourceUrlString);
             Source cleanedHtml = new Source(output.toString());
 //        System.out.println(cleanedHtml.toString());
-            HashMap<String, List<String>> tagMap = getTagMap(cleanedHtml);
+//            HashMap<String, List<String>> tagMap = getTagMap(cleanedHtml);
 //        System.out.println(tagMap);
-            String electedTag = getMostPopularTag(tagMap);
-            System.out.println("Elected Tag: " + electedTag + " (" + tagMap.get(electedTag).size() + " operations)");
-            List<String> operationList = tagMap.get(electedTag);
-            HashMap<String, String> operationMap = getOperationMap(cleanedHtml, operationList, electedTag);
+//            String electedTag = getMostPopularTag(tagMap);
+//            System.out.println("Elected Tag: " + electedTag + " (" + tagMap.get(electedTag).size() + " operations)");
+//            List<String> operationList = tagMap.get(electedTag);
+//            HashMap<String, String> scoredOperationMap = getOperationMap(cleanedHtml, operationList, electedTag);
+            getOperationMap(cleanedHtml);
 //        for (StartTag st : cleanedHtml.getAllStartTags()) {
 //            System.out.print("<" + st.getName() + ">");
 //        }
@@ -371,7 +377,7 @@ public class HTTPDocProcessing {
         }
         return tagMap;
     }
-    
+
     private static CharSequence getStartTagHTML(StartTag startTag) {
         // tidies and filters out non-approved attributes
         StringBuilder sb = new StringBuilder();
@@ -396,7 +402,7 @@ public class HTTPDocProcessing {
 //    public static HashMap<String, String> getOperationMap(Source cleanedHtml, List<String> operationList, String electedTag) {
 //        System.out.println("Lista de Operaciones: " + operationList);
 //        try {
-//            HashMap<String, String> operationMap = new HashMap<>();
+//            HashMap<String, String> scoredOperationMap = new HashMap<>();
 //            for (Element e : cleanedHtml.getAllElements()) {
 //                Source elementSource = new Source(e.getContent());
 //                elementSource.fullSequentialParse();
@@ -424,11 +430,11 @@ public class HTTPDocProcessing {
 //
 //                }
 //                if (match != null) {
-//                    operationMap.put(match.getRight(), e.getTextExtractor().toString());
+//                    scoredOperationMap.put(match.getRight(), e.getTextExtractor().toString());
 //                }
 //            }
-//            System.out.println("Operation Map: " + operationMap + " -- " + operationMap.size() + " operations");
-//            return operationMap;
+//            System.out.println("Operation Map: " + scoredOperationMap + " -- " + scoredOperationMap.size() + " operations");
+//            return scoredOperationMap;
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //            return null;
@@ -462,6 +468,98 @@ public class HTTPDocProcessing {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static void getOperationMap(Source htmlSource) {
+        htmlSource.fullSequentialParse();
+        List<Pair<Integer, String>> indexedCamelCaseWords = CamelCaseFilter.getIndexedCamelCaseWords(htmlSource.toString());
+        List<String> camelCaseWords = CamelCaseFilter.getCamelCaseWords(htmlSource.toString());
+        List<String> candidateOperations = new ArrayList<>();
+        HashMap<String, HashMap<String, Pair<Double, String>>> scoredOperationMap = new HashMap<>();
+        for (String ccWord : camelCaseWords) {
+            if (isOperation(ccWord) && !candidateOperations.contains(ccWord)) {
+                candidateOperations.add(ccWord);
+            }
+        }
+        System.out.println("\n" + candidateOperations + " Size: " + candidateOperations.size());
+        for (Pair<Integer, String> p : indexedCamelCaseWords) {
+            String ccWord = p.getRight();
+            //if (candidateOperations.contains(ccWord)) {
+            Element enclosingElement = htmlSource.getEnclosingElement((int) p.getLeft());
+            String elementContent = enclosingElement.getTextExtractor().toString();
+            String elementTag = enclosingElement.getName();
+            ArrayList<String> elementContentTokens = new ArrayList(Arrays.asList(elementContent.replaceAll("[^a-zA-Z]", " ").split(" ")));
+            int pos = elementContentTokens.indexOf(ccWord);
+            int quantityTokens = elementContentTokens.size();
+            ArrayList<String> aux = elementContentTokens;
+            aux.retainAll(candidateOperations);
+            double counter = aux.contains(ccWord) ? Math.exp(aux.size() + pos) : Math.exp(aux.size() + pos + 1);
+            double score = quantityTokens / counter;
+            if (score == 1 / Math.exp(1)) {
+                enclosingElement = enclosingElement.getParentElement();
+                elementContent = enclosingElement.getTextExtractor().toString();
+                elementTag = enclosingElement.getName();
+                elementContentTokens = new ArrayList(Arrays.asList(elementContent.replaceAll("[^a-zA-Z]", " ").split(" ")));
+                pos = elementContentTokens.indexOf(ccWord);
+                quantityTokens = elementContentTokens.size();
+                aux = elementContentTokens;
+                aux.retainAll(candidateOperations);
+                counter = aux.contains(ccWord) ? Math.exp(aux.size() + pos) : Math.exp(aux.size() + pos + 1);
+                double newScore = quantityTokens / counter;
+                if (newScore > score) {
+                    score = newScore;
+                }
+            }
+//            System.out.println(enclosingElement.getName() + " " + ccWord + ": " + score);
+            if (score >= 1 / Math.exp(1)) {
+                if (scoredOperationMap.containsKey(elementTag)) {
+                    if (scoredOperationMap.get(elementTag).containsKey(ccWord)) {
+                        if (scoredOperationMap.get(elementTag).get(ccWord).getLeft() < score) {
+                            scoredOperationMap.get(elementTag).put(ccWord, new Pair<>(score, elementContent));
+                        }
+                    } else {
+                        scoredOperationMap.get(elementTag).put(ccWord, new Pair<>(score, elementContent));
+                    }
+                } else {
+                    HashMap<String, Pair<Double, String>> cadidateOp = new HashMap<>();
+                    cadidateOp.put(ccWord, new Pair<>(score, elementContent));
+                    scoredOperationMap.put(elementTag, cadidateOp);
+                }
+            }
+            //}
+        }
+//        System.out.println("\n" + scoredOperationMap + "\n");
+        HashMap<String, HashMap<String, Pair<Double, String>>> operationMap = new HashMap<>();
+//        operationMap.putAll(scoredOperationMap);
+        for (String keyTag : scoredOperationMap.keySet()) {
+            HashMap<String, Pair<Double, String>> candidateOps = scoredOperationMap.get(keyTag);
+            double mean, stdDev, upperLimit, lowerLimit;
+            ArrayList<Double> scores = new ArrayList<>();
+            for (Pair<Double, String> p : candidateOps.values()) {
+                scores.add(p.getLeft());
+            }
+            Mean meanObj = new Mean();
+            StandardDeviation stdDevObj = new StandardDeviation();
+            Double[] scoresArray = scores.toArray(new Double[0]);
+            mean = meanObj.evaluate(ArrayUtils.toPrimitive(scoresArray));
+            stdDev = stdDevObj.evaluate(ArrayUtils.toPrimitive(scoresArray));
+            upperLimit = mean + 4 * stdDev;
+            lowerLimit = (stdDev/mean > 0.5) ? mean - 2 * stdDev : mean - 3 * stdDev ;
+            System.out.println("Mean: " + mean + ", " + "StdDev: " + stdDev + ", " + "lower: " + lowerLimit + ", upper: " + upperLimit);
+            for (String keyOp : candidateOps.keySet()) {
+                if (candidateOps.get(keyOp).getLeft() >= lowerLimit && candidateOps.get(keyOp).getLeft() <= upperLimit) {
+                    if (operationMap.containsKey(keyTag)) {
+                        operationMap.get(keyTag).put(keyOp, candidateOps.get(keyOp));
+                    } else {
+                        HashMap<String, Pair<Double, String>> candidateOp = new HashMap<>();
+                        candidateOp.put(keyOp, candidateOps.get(keyOp));
+                        operationMap.put(keyTag, candidateOp);
+                    }
+                }
+            }
+        }
+        System.out.println("\n" + operationMap + "\n");
+
     }
 
     public static Element getOperationContainer(Element element, List<String> operationList, String electedTag) {
