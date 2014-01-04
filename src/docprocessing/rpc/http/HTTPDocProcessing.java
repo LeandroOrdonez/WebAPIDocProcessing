@@ -120,8 +120,22 @@ public class HTTPDocProcessing {
             System.getProperties().put("http.proxyPort", "3128");
         }
         List<String> sourcesUrls = Arrays.asList(
+                
+                // Uncomment one line at a time for testing on each one of the APIs.
+                
+//                "http://blogspam.net/api/1.0/");
+                //                "http://help.4shared.com/index.php/SOAP_API#addToFavorites");
+//                "http://developer.affili.net/desktopdefault.aspx/tabid-93");
+//                "http://www.benchmarkemail.com/API/Library");
+//                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx");
+//                "http://business.intuit.com/boorah/docs/syndication/integration.html");
+//                "http://aws.amazon.com/es/sqs/");
+//                "http://aws.amazon.com/es/simpledb/");
+//                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
+                
+                // Whole list of URIs
+                
                 "http://blogspam.net/api/1.0/",
-                  //                "http://help.4shared.com/index.php/SOAP_API#addToFavorites");//,
                 "http://developer.affili.net/desktopdefault.aspx/tabid-93",
                 "http://www.benchmarkemail.com/API/Library",
                 "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx",
@@ -129,6 +143,7 @@ public class HTTPDocProcessing {
                 "http://aws.amazon.com/es/sqs/",
                 "http://aws.amazon.com/es/simpledb/",
                 "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
+        
         for (String sourceUrlString : sourcesUrls) {
             System.out.println("URI: " + sourceUrlString);
             OutputDocument output = cleanHTML(sourceUrlString);
@@ -486,30 +501,10 @@ public class HTTPDocProcessing {
             String ccWord = p.getRight();
             //if (candidateOperations.contains(ccWord)) {
             Element enclosingElement = htmlSource.getEnclosingElement((int) p.getLeft());
-            String elementContent = enclosingElement.getTextExtractor().toString();
-            String elementTag = enclosingElement.getName();
-            ArrayList<String> elementContentTokens = new ArrayList(Arrays.asList(elementContent.replaceAll("[^a-zA-Z]", " ").split(" ")));
-            int pos = elementContentTokens.indexOf(ccWord);
-            int quantityTokens = elementContentTokens.size();
-            ArrayList<String> aux = elementContentTokens;
-            aux.retainAll(candidateOperations);
-            double counter = aux.contains(ccWord) ? Math.exp(aux.size() + pos) : Math.exp(aux.size() + pos + 1);
-            double score = quantityTokens / counter;
-            if (score == 1 / Math.exp(1)) {
-                enclosingElement = enclosingElement.getParentElement();
-                elementContent = enclosingElement.getTextExtractor().toString();
-                elementTag = enclosingElement.getName();
-                elementContentTokens = new ArrayList(Arrays.asList(elementContent.replaceAll("[^a-zA-Z]", " ").split(" ")));
-                pos = elementContentTokens.indexOf(ccWord);
-                quantityTokens = elementContentTokens.size();
-                aux = elementContentTokens;
-                aux.retainAll(candidateOperations);
-                counter = aux.contains(ccWord) ? Math.exp(aux.size() + pos) : Math.exp(aux.size() + pos + 1);
-                double newScore = quantityTokens / counter;
-                if (newScore > score) {
-                    score = newScore;
-                }
-            }
+            Pair<Double, Element> scoredElement = getElementScore(enclosingElement, ccWord, candidateOperations, 0);
+            double score = scoredElement.getLeft();
+            String elementContent = scoredElement.getRight().getTextExtractor().toString();
+            String elementTag = scoredElement.getRight().getName();
 //            System.out.println(enclosingElement.getName() + " " + ccWord + ": " + score);
             if (score >= 1 / Math.exp(1)) {
                 if (scoredOperationMap.containsKey(elementTag)) {
@@ -544,9 +539,12 @@ public class HTTPDocProcessing {
             mean = meanObj.evaluate(ArrayUtils.toPrimitive(scoresArray));
             stdDev = stdDevObj.evaluate(ArrayUtils.toPrimitive(scoresArray));
             upperLimit = mean + 4 * stdDev;
-            lowerLimit = (stdDev/mean > 0.5) ? mean - 2 * stdDev : mean - 3 * stdDev ;
+            lowerLimit = (stdDev / mean > 0.5) ? mean - 2 * stdDev : mean - 3 * stdDev;
             System.out.println("Mean: " + mean + ", " + "StdDev: " + stdDev + ", " + "lower: " + lowerLimit + ", upper: " + upperLimit);
             for (String keyOp : candidateOps.keySet()) {
+                if(keyOp.equals("GetPropertyList")){
+                    System.out.println("STOP!!");
+                }
                 if (candidateOps.get(keyOp).getLeft() >= lowerLimit && candidateOps.get(keyOp).getLeft() <= upperLimit) {
                     if (operationMap.containsKey(keyTag)) {
                         operationMap.get(keyTag).put(keyOp, candidateOps.get(keyOp));
@@ -560,6 +558,26 @@ public class HTTPDocProcessing {
         }
         System.out.println("\n" + operationMap + "\n");
 
+    }
+
+    public static Pair<Double, Element> getElementScore(Element element, String ccWord, List<String> candidateOperations, int depth) {
+        String elementContent = element.getTextExtractor().toString();
+        ArrayList<String> elementContentTokens = new ArrayList(Arrays.asList(elementContent.replaceAll("[^a-zA-Z]", " ").split(" ")));
+        int pos = elementContentTokens.indexOf(ccWord);
+        int quantityTokens = elementContentTokens.size();
+        ArrayList<String> aux = elementContentTokens;
+        aux.retainAll(candidateOperations);
+        double divider = aux.contains(ccWord) ? Math.exp(aux.size() + pos) : Math.exp(aux.size() + pos + 1);
+        double score = quantityTokens / divider;
+        if (depth <= 1) {
+            if (score == 1 / Math.exp(1)) {
+                Pair<Double, Element> newScoredElement = getElementScore(element.getParentElement(), ccWord, candidateOperations, depth + 1);
+                if (newScoredElement.getLeft() > score) {
+                    return newScoredElement;
+                }
+            }
+        }
+        return new Pair<>(score, element);
     }
 
     public static Element getOperationContainer(Element element, List<String> operationList, String electedTag) {
