@@ -124,7 +124,6 @@ public class HTTPDocProcessing {
                 // Uncomment one line at a time for testing on each one of the APIs.
                 
 //                "http://blogspam.net/api/1.0/");
-                //                "http://help.4shared.com/index.php/SOAP_API#addToFavorites");
 //                "http://developer.affili.net/desktopdefault.aspx/tabid-93");
 //                "http://www.benchmarkemail.com/API/Library");
 //                "http://www.holidaywebservice.com/ServicesAvailable_HolidayService2.aspx");
@@ -132,6 +131,7 @@ public class HTTPDocProcessing {
 //                "http://aws.amazon.com/es/sqs/");
 //                "http://aws.amazon.com/es/simpledb/");
 //                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
+//                "http://allogarage.wordpress.com/2007/11/15/api-allogarage/");
                 
                 // Whole list of URIs
                 
@@ -142,10 +142,11 @@ public class HTTPDocProcessing {
                 "http://business.intuit.com/boorah/docs/syndication/integration.html",
                 "http://aws.amazon.com/es/sqs/",
                 "http://aws.amazon.com/es/simpledb/",
-                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye");
+                "http://www.ebi.ac.uk/Tools/webservices/services/eb-eye",
+                "http://allogarage.wordpress.com/2007/11/15/api-allogarage/");
         
         for (String sourceUrlString : sourcesUrls) {
-            System.out.println("URI: " + sourceUrlString);
+            System.out.println("\nURI: " + sourceUrlString);
             OutputDocument output = cleanHTML(sourceUrlString);
             Source cleanedHtml = new Source(output.toString());
 //        System.out.println(cleanedHtml.toString());
@@ -155,7 +156,11 @@ public class HTTPDocProcessing {
 //            System.out.println("Elected Tag: " + electedTag + " (" + tagMap.get(electedTag).size() + " operations)");
 //            List<String> operationList = tagMap.get(electedTag);
 //            HashMap<String, String> scoredOperationMap = getOperationMap(cleanedHtml, operationList, electedTag);
-            getOperationMap(cleanedHtml);
+            HashMap<String, Pair<Double, String>> operationMap = getOperationMap(cleanedHtml);
+            for (String operation: operationMap.keySet()) {
+                System.out.println(operation + "\n\t" + operationMap.get(operation).getRight() + "\n");
+            }
+            System.out.println("------------------------------------------------------------------------------------------------------------------------");
 //        for (StartTag st : cleanedHtml.getAllStartTags()) {
 //            System.out.print("<" + st.getName() + ">");
 //        }
@@ -281,6 +286,7 @@ public class HTTPDocProcessing {
      * @return
      */
     public static String removeFormattingTag(StartTag startTag, String outputString) {
+        try {
         StartTag parentTag = startTag.getElement().getParentElement().getStartTag();
 //        if (startTag.getName().equals("span") && startTag.getElement().getTextExtractor().toString().equals("getSharedDirItems")) {
 //            System.out.println("STOOOOP!!");
@@ -294,9 +300,9 @@ public class HTTPDocProcessing {
 //                    System.out.println(startTag.getElement().toString());
 //                    System.out.println(startTag.getElement().getContent().toString());
 //                }
-                outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), ((startTag.getAttributeValue("href") != null) && startTag.getAttributeValue("href").startsWith("#")) ? "" : startTag.getElement().getContent().toString());
+                outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString().replace("$", "\\$")), ((startTag.getAttributeValue("href") != null) && startTag.getAttributeValue("href").startsWith("#")) ? "" : startTag.getElement().getContent().toString());
             } else {
-                outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
+                outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString().replace("$", "\\$")), startTag.getElement().getContent().toString());
 //            if (outputString.indexOf(startTag.getElement().toString()) != -1) {
 //                System.out.println("\nSomething went wrong!: " + startTag.getElement().toString());
 //            } else {
@@ -313,14 +319,19 @@ public class HTTPDocProcessing {
             outputString = removeFormattingTag(parentTag, outputString);
             if (!(parentTag.getName().equals("a") && parentTag.getAttributeValue("href") != null && parentTag.getAttributeValue("href").startsWith("#"))) {
                 if (startTag.getName().equals("a")) {
-                    outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), ((startTag.getAttributeValue("href") != null) && startTag.getAttributeValue("href").startsWith("#")) ? "" : startTag.getElement().getContent().toString());
+                    outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString().replace("$", "\\$")), ((startTag.getAttributeValue("href") != null) && startTag.getAttributeValue("href").startsWith("#")) ? "" : startTag.getElement().getContent().toString());
                 } else {
-                    outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
+                    outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString().replace("$", "\\$")), startTag.getElement().getContent().toString());
                 }
             }
 //            outputString = outputString.replaceFirst(Pattern.quote(startTag.getElement().toString()), startTag.getElement().getContent().toString());
         }
         return outputString;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("In processing: " + startTag.getName() + ", Element: " + startTag.getElement().getContent().toString());
+            return null;
+        }
     }
 
     /**
@@ -485,7 +496,7 @@ public class HTTPDocProcessing {
         }
     }
 
-    public static void getOperationMap(Source htmlSource) {
+    public static HashMap<String, Pair<Double, String>> getOperationMap(Source htmlSource) {
         htmlSource.fullSequentialParse();
         List<Pair<Integer, String>> indexedCamelCaseWords = CamelCaseFilter.getIndexedCamelCaseWords(htmlSource.toString());
         List<String> camelCaseWords = CamelCaseFilter.getCamelCaseWords(htmlSource.toString());
@@ -526,25 +537,44 @@ public class HTTPDocProcessing {
 //        System.out.println("\n" + scoredOperationMap + "\n");
         HashMap<String, HashMap<String, Pair<Double, String>>> operationMap = new HashMap<>();
 //        operationMap.putAll(scoredOperationMap);
+        String electedTag = null;
+        int quantityOperations = 0;
+        double maxMean = 0;
         for (String keyTag : scoredOperationMap.keySet()) {
             HashMap<String, Pair<Double, String>> candidateOps = scoredOperationMap.get(keyTag);
             double mean, stdDev, upperLimit, lowerLimit;
             ArrayList<Double> scores = new ArrayList<>();
-            for (Pair<Double, String> p : candidateOps.values()) {
-                scores.add(p.getLeft());
+            int numberPOS_Operations = 0;
+            for (String operation : candidateOps.keySet()) {
+                scores.add(candidateOps.get(operation).getLeft());
+                if(isOperation(operation)) {
+                    numberPOS_Operations += 1;                  
+                }
             }
             Mean meanObj = new Mean();
             StandardDeviation stdDevObj = new StandardDeviation();
             Double[] scoresArray = scores.toArray(new Double[0]);
             mean = meanObj.evaluate(ArrayUtils.toPrimitive(scoresArray));
             stdDev = stdDevObj.evaluate(ArrayUtils.toPrimitive(scoresArray));
+            if (stdDev == 0) {
+                continue;
+            }
             upperLimit = mean + 4 * stdDev;
             lowerLimit = (stdDev / mean > 0.5) ? mean - 2 * stdDev : mean - 3 * stdDev;
-            System.out.println("Mean: " + mean + ", " + "StdDev: " + stdDev + ", " + "lower: " + lowerLimit + ", upper: " + upperLimit);
-            for (String keyOp : candidateOps.keySet()) {
-                if(keyOp.equals("GetPropertyList")){
-                    System.out.println("STOP!!");
+            if (numberPOS_Operations > quantityOperations) {
+                electedTag = keyTag;
+                quantityOperations = numberPOS_Operations;
+                if(mean > maxMean) {
+                    maxMean = mean;
                 }
+            } else if (numberPOS_Operations == quantityOperations) {
+                if (mean > maxMean) {
+                    electedTag = keyTag;
+                    maxMean = mean;
+                }
+            }
+            System.out.println("\nTag: " + keyTag + ", Size: " + scores.size() + ", Num. POS Ops: " + numberPOS_Operations + ", Mean: " + mean + ", StdDev: " + stdDev + ", lower: " + lowerLimit + ", upper: " + upperLimit);
+            for (String keyOp : candidateOps.keySet()) {
                 if (candidateOps.get(keyOp).getLeft() >= lowerLimit && candidateOps.get(keyOp).getLeft() <= upperLimit) {
                     if (operationMap.containsKey(keyTag)) {
                         operationMap.get(keyTag).put(keyOp, candidateOps.get(keyOp));
@@ -556,8 +586,8 @@ public class HTTPDocProcessing {
                 }
             }
         }
-        System.out.println("\n" + operationMap + "\n");
-
+        System.out.println("\nElected Tag: " + electedTag + "\n");//" + "\n\n" + operationMap.get(electedTag) + "\n----------------------------------------------------\n");
+        return operationMap.get(electedTag);
     }
 
     public static Pair<Double, Element> getElementScore(Element element, String ccWord, List<String> candidateOperations, int depth) {
@@ -565,9 +595,10 @@ public class HTTPDocProcessing {
         ArrayList<String> elementContentTokens = new ArrayList(Arrays.asList(elementContent.replaceAll("[^a-zA-Z]", " ").split(" ")));
         int pos = elementContentTokens.indexOf(ccWord);
         int quantityTokens = elementContentTokens.size();
-        ArrayList<String> aux = elementContentTokens;
-        aux.retainAll(candidateOperations);
-        double divider = aux.contains(ccWord) ? Math.exp(aux.size() + pos) : Math.exp(aux.size() + pos + 1);
+        ArrayList<String> copyOfTokens = elementContentTokens;
+        copyOfTokens.retainAll(candidateOperations);
+        Set<String> copyOfTokensSet = new HashSet<>(copyOfTokens);
+        double divider = copyOfTokensSet.contains(ccWord) ? Math.exp(copyOfTokensSet.size() + pos) : Math.exp(copyOfTokensSet.size() + pos + 1);
         double score = quantityTokens / divider;
         if (depth <= 1) {
             if (score == 1 / Math.exp(1)) {
