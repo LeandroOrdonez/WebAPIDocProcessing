@@ -8,7 +8,7 @@ import docprocessing.rpc.soap.model.SoapComplexDataElement;
 import docprocessing.rpc.soap.model.SoapDataElement;
 import docprocessing.rpc.soap.model.SoapOperation;
 import docprocessing.rpc.soap.model.SoapService;
-import docprocessing.rpc.soap.persistence.CrudManager;
+import docprocessing.persistence.CrudManager;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

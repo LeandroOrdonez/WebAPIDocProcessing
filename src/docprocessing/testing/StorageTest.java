@@ -6,7 +6,7 @@ package docprocessing.testing;
 
 import docprocessing.rpc.soap.WSDLParsing;
 import docprocessing.rpc.soap.model.SoapService;
-import docprocessing.rpc.soap.persistence.CrudManager;
+import docprocessing.persistence.CrudManager;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.URL;
