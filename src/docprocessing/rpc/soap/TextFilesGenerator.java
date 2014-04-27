@@ -75,7 +75,7 @@ public class TextFilesGenerator {
                     content += acronymResolver(CamelCaseFilter.splitCamelCase(data.getDataElementName())) + "\n";
                 }
             }
-            content = DocCleaning.spellCorrection(content);
+            //content = DocCleaning.spellCorrection(content);
             //***********************************/
             out = new FileOutputStream(fileName);
             out.write(content.getBytes());
