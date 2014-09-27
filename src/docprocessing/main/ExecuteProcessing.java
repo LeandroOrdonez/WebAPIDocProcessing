@@ -8,7 +8,7 @@ import docprocessing.rpc.soap.DictGenerator;
 import docprocessing.rpc.soap.TextFilesGenerator;
 import docprocessing.testing.*;
 import docprocessing.rpc.soap.WSDLParsing;
-import docprocessing.rpc.soap.persistence.CrudManager;
+import docprocessing.persistence.CrudManager;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.URL;

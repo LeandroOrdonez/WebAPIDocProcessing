@@ -6,7 +6,7 @@ package docprocessing.testing;
 
 import docprocessing.rpc.soap.TextFilesGenerator;
 import docprocessing.rpc.soap.model.SoapOperation;
-import docprocessing.rpc.soap.persistence.CrudManager;
+import docprocessing.persistence.CrudManager;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
