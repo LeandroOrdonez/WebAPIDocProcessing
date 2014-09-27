@@ -12,3 +12,4 @@ manifest.xml
 *.txt
 *.txt~
 /src/wsdl-reg/text-files/doc/
+/lib/
